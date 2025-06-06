@@ -72,5 +72,3 @@ export const getNavItemsForRole = (role: string | null): NavItem[] => {
   
   return [...roleSpecificNavs, ...uniqueSharedNavs];
 };
-
-    
