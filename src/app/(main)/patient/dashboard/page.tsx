@@ -1,3 +1,4 @@
+
 "use client";
 
 import { PageHeader } from "@/components/page-header";
@@ -41,7 +42,7 @@ export default function PatientDashboardPage() {
             <div className="mt-4 p-4 bg-secondary/50 rounded-lg text-center">
               <p className="text-sm text-muted-foreground mb-2">Holographic Scan Display (Placeholder)</p>
               <Image src="https://placehold.co/600x300.png" alt="Holographic Scan Placeholder" width={600} height={300} className="rounded-md mx-auto shadow-md" data-ai-hint="hologram body" />
-            </CardContent>
+            </div>
           </CardContent>
         </Card>
 
