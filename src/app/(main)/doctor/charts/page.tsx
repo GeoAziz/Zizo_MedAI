@@ -1,20 +1,150 @@
+
+"use client";
+
+import { useState, useEffect } from 'react';
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BarChart3, UserCircle, Upload, Edit, Save, Search, Image as ImageIcon, FileText, Maximize } from "lucide-react";
+import Image from "next/image";
+
+const mockPatientsForChart = [
+  { id: "P001", name: "John Doe", dob: "1985-05-15" },
+  { id: "P002", name: "Jane Smith", dob: "1990-02-20" },
+  { id: "P003", name: "Alice Brown", dob: "1978-11-10" },
+];
+
+const mockChartEntries = {
+  "P001": [
+    { date: "2024-07-25", type: "SOAP Note", content: "Patient reports stable condition. BP 130/80. Continue medication.", image: null },
+    { date: "2024-07-10", type: "X-Ray Analysis", content: "Chest X-Ray shows clear lungs. No acute abnormalities.", image: "https://placehold.co/400x300.png?text=X-Ray+P001" , dataAiHint: "chest xray" },
+  ],
+  "P002": [
+    { date: "2024-07-22", type: "Consultation Note", content: "Reviewed lab results. Discussed diet and exercise.", image: null },
+  ],
+};
+
 
 export default function DoctorChartsPage() {
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(mockPatientsForChart[0].id);
+  const [annotations, setAnnotations] = useState<string>("");
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+
+  const patient = mockPatientsForChart.find(p => p.id === selectedPatientId);
+  const patientChartEntries = selectedPatientId ? (mockChartEntries as any)[selectedPatientId] || [] : [];
+  
+  useEffect(() => {
+    if (patientChartEntries.length > 0 && patientChartEntries[0].image) {
+      setCurrentImage(patientChartEntries[0].image);
+    } else {
+      setCurrentImage(null);
+    }
+    setAnnotations(""); // Reset annotations when patient changes
+  }, [selectedPatientId, patientChartEntries]);
+
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Digital Charts" description="Annotate patient records and upload imaging." icon={BarChart3} />
-      <Card className="shadow-lg rounded-xl">
-        <CardHeader>
-          <CardTitle className="font-headline text-xl">Patient Charting System</CardTitle>
-          <CardDescription>This feature is currently under development. Check back soon for updates!</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-[200px] flex items-center justify-center">
-          <p className="text-muted-foreground">Digital charting tools coming soon.</p>
-        </CardContent>
-      </Card>
+      <PageHeader 
+        title="Digital Charting System" 
+        description="Annotate patient records, upload imaging, and manage chart entries." 
+        icon={BarChart3}
+        actions={
+            <Button disabled><Save className="mr-2 h-4 w-4" /> Save Chart</Button>
+        }
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Patient Selection & Chart History */}
+        <Card className="lg:col-span-1 shadow-xl rounded-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-lg">Select Patient</CardTitle>
+             <div className="relative mt-2">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search patient..." className="pl-8 bg-input" disabled/>
+            </div>
+            <Select value={selectedPatientId || ""} onValueChange={setSelectedPatientId}>
+                <SelectTrigger className="w-full mt-2 bg-input">
+                    <SelectValue placeholder="Select a patient" />
+                </SelectTrigger>
+                <SelectContent>
+                    {mockPatientsForChart.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.id})</SelectItem>)}
+                </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent>
+            {patient && (
+                <div className="mb-4 p-3 bg-secondary/30 rounded-md">
+                    <p className="font-semibold text-foreground">{patient.name}</p>
+                    <p className="text-sm text-muted-foreground">DOB: {patient.dob}</p>
+                </div>
+            )}
+            <h4 className="font-semibold text-sm mb-2 text-muted-foreground">Chart Entries:</h4>
+            {patientChartEntries.length > 0 ? (
+                <ul className="space-y-2 max-h-96 overflow-y-auto">
+                    {patientChartEntries.map((entry: any, index: number) => (
+                        <li key={index} className="p-2 border border-border rounded-md hover:bg-secondary/20 cursor-pointer" onClick={() => { setCurrentImage(entry.image); setAnnotations(entry.content); }}>
+                            <p className="text-sm font-medium text-foreground flex items-center gap-1">
+                                {entry.image ? <ImageIcon className="h-3 w-3 text-primary" /> : <FileText className="h-3 w-3 text-primary" />}
+                                {entry.type}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{entry.date}</p>
+                        </li>
+                    ))}
+                </ul>
+            ): (
+                <p className="text-sm text-muted-foreground">No chart entries for this patient.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Imaging & Annotation Area */}
+        <Card className="lg:col-span-3 shadow-xl rounded-xl">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+                <CardTitle className="font-headline text-xl">Imaging & Annotations</CardTitle>
+                <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled><Upload className="mr-2 h-4 w-4" /> Upload New</Button>
+                    <Button variant="outline" size="sm" disabled><Maximize className="h-4 w-4" /></Button>
+                </div>
+            </div>
+            <CardDescription>View medical images and add annotations. Drawing tools are conceptual.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2 bg-secondary/30 p-4 rounded-lg flex items-center justify-center min-h-[300px] relative">
+              {currentImage ? (
+                <Image src={currentImage} alt="Medical Imaging Placeholder" width={400} height={300} className="rounded-md shadow-md object-contain max-h-[400px]" data-ai-hint={ (mockChartEntries as any)[selectedPatientId || '']?.find((e:any) => e.image === currentImage)?.dataAiHint || "medical scan"} />
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <ImageIcon className="h-16 w-16 mx-auto mb-2" />
+                  <p>No image selected or available for this entry.</p>
+                </div>
+              )}
+               <div className="absolute top-2 left-2 space-x-1">
+                  <Button variant="ghost" size="icon" disabled><Edit className="h-4 w-4"/></Button>
+                  {/* Add more mock drawing tools here */}
+               </div>
+            </div>
+            <div className="md:col-span-1 space-y-4">
+                <div>
+                    <Label htmlFor="annotations" className="font-semibold">Doctor's Notes / Annotations</Label>
+                    <Textarea 
+                        id="annotations" 
+                        placeholder="Enter notes here..." 
+                        className="min-h-[200px] mt-1 bg-input"
+                        value={annotations}
+                        onChange={(e) => setAnnotations(e.target.value)}
+                        disabled={!selectedPatientId}
+                    />
+                </div>
+                <Button className="w-full" disabled={!selectedPatientId || !annotations}>Save Annotation</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
