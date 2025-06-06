@@ -20,9 +20,12 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from '@/components/ui/textarea';
 
 
 interface Surgery {
@@ -40,7 +43,7 @@ interface Surgery {
   notes?: string;
 }
 
-const mockSurgeries: Surgery[] = [
+const mockInitialSurgeries: Surgery[] = [
   { id: "S001", patientName: "Robert C. Johnson", patientId: "P004", procedure: "Knee Arthroscopy (Right)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true, notes: "Standard procedure, no complications expected." },
   { id: "S002", patientName: "Alice B. Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true, notes: "Patient has mild asthma, monitor post-op breathing." },
   { id: "S003", patientName: "David L. Lee", patientId: "P007", procedure: "Cataract Surgery (Left Eye)", surgeon: "Dr. Emily Carter", or: "OR 2", date: "2024-08-11", time: "11:00 AM", duration: "1 hour", status: "Scheduled", aiAssist: false },
@@ -51,38 +54,51 @@ const mockSurgeries: Surgery[] = [
 
 const getStatusBadge = (status: Surgery['status']) => {
   switch (status) {
-    case "Scheduled": return "bg-blue-500/20 text-blue-700";
-    case "Pending Confirmation": return "bg-yellow-500/20 text-yellow-700";
-    case "Completed": return "bg-green-500/20 text-green-700";
-    case "Cancelled": return "bg-red-500/20 text-red-700";
-    case "In Progress": return "bg-purple-500/20 text-purple-700 animate-pulse";
-    default: return "bg-gray-500/20 text-gray-700";
+    case "Scheduled": return "bg-blue-500/20 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300";
+    case "Pending Confirmation": return "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300";
+    case "Completed": return "bg-green-500/20 text-green-700 dark:bg-green-700/30 dark:text-green-300";
+    case "Cancelled": return "bg-red-500/20 text-red-700 dark:bg-red-700/30 dark:text-red-300";
+    case "In Progress": return "bg-purple-500/20 text-purple-700 dark:bg-purple-700/30 dark:text-purple-300 animate-pulse";
+    default: return "bg-gray-500/20 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300";
   }
 };
 
 export default function DoctorSurgerySchedulePage() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10T00:00:00")); // Set specific date for initial view
-  const [surgeries, setSurgeries] = useState<Surgery[]>(mockSurgeries);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10T00:00:00"));
+  const [surgeries, setSurgeries] = useState<Surgery[]>(mockInitialSurgeries);
   const [selectedSurgery, setSelectedSurgery] = useState<Surgery | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState<Partial<Surgery>>({});
 
   const filteredSurgeries = selectedDate 
     ? surgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd"))
     : surgeries;
 
-  const openDetailsModal = (surgery: Surgery) => {
-    setSelectedSurgery(surgery);
-    setIsDetailsModalOpen(true);
-  };
-  
-  // Edit modal logic would go here (form handling, etc.)
-  // For prototype, just opening/closing
   const openEditModal = (surgery: Surgery) => {
     setSelectedSurgery(surgery);
+    setEditFormData({ ...surgery });
     setIsEditModalOpen(true);
   };
 
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+   const handleEditFormSelectChange = (name: keyof Surgery, value: string | boolean) => {
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveChanges = () => {
+    if (selectedSurgery) {
+      // Mock save action
+      setSurgeries(prevSurgeries => 
+        prevSurgeries.map(s => s.id === selectedSurgery.id ? { ...s, ...editFormData } as Surgery : s)
+      );
+      alert(`Changes for surgery ${selectedSurgery.id} would be saved. (Mock action)`);
+      setIsEditModalOpen(false);
+      setSelectedSurgery(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -94,7 +110,7 @@ export default function DoctorSurgerySchedulePage() {
           <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
+                <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal bg-card", !selectedDate && "text-muted-foreground")}>
                   <CalendarDays className="mr-2 h-4 w-4" />
                   {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                 </Button>
@@ -103,7 +119,7 @@ export default function DoctorSurgerySchedulePage() {
                 <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
               </PopoverContent>
             </Popover>
-            <Button disabled><Filter className="mr-2 h-4 w-4"/>Filter</Button>
+            <Button disabled variant="outline"><Filter className="mr-2 h-4 w-4"/>Filter</Button>
             <Button disabled><PlusCircle className="mr-2 h-4 w-4"/>New Surgery</Button>
           </div>
         }
@@ -145,7 +161,30 @@ export default function DoctorSurgerySchedulePage() {
                       <Badge className={getStatusBadge(surgery.status)}>{surgery.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="icon" onClick={() => openDetailsModal(surgery)} title="View Details"><Eye className="h-4 w-4" /></Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                           <Button variant="ghost" size="icon" title="View Details"><Eye className="h-4 w-4" /></Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                            <DialogHeader>
+                            <DialogTitle>Surgery Details: {surgery.id}</DialogTitle>
+                            <DialogDescription>Procedure: {surgery.procedure}</DialogDescription>
+                            </DialogHeader>
+                            <div className="py-4 space-y-3">
+                            <p><strong>Patient:</strong> {surgery.patientName} ({surgery.patientId})</p>
+                            <p><strong>Surgeon:</strong> {surgery.surgeon}</p>
+                            <p><strong>Date & Time:</strong> {surgery.date} at {surgery.time}</p>
+                            <p><strong>Operating Room:</strong> {surgery.or}</p>
+                            <p><strong>Expected Duration:</strong> {surgery.duration}</p>
+                            <p><strong>AI Assisted:</strong> {surgery.aiAssist ? 'Yes' : 'No'}</p>
+                            <p><strong>Status:</strong> <Badge className={getStatusBadge(surgery.status)}>{surgery.status}</Badge></p>
+                            {surgery.notes && <p><strong>Notes:</strong> {surgery.notes}</p>}
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                       <Button variant="ghost" size="icon" onClick={() => openEditModal(surgery)} title="Edit Surgery" disabled={surgery.status === 'Completed' || surgery.status === 'Cancelled'}><Edit className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
@@ -177,59 +216,65 @@ export default function DoctorSurgerySchedulePage() {
             <Button variant="outline" disabled className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">Access AI Planner</Button>
           </CardFooter>
         </Card>
-
-      {/* Surgery Details Modal */}
-      {selectedSurgery && (
-        <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Surgery Details: {selectedSurgery.id}</DialogTitle>
-              <DialogDescription>Procedure: {selectedSurgery.procedure}</DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p><strong>Patient:</strong> {selectedSurgery.patientName} ({selectedSurgery.patientId})</p>
-              <p><strong>Surgeon:</strong> {selectedSurgery.surgeon}</p>
-              <p><strong>Date & Time:</strong> {selectedSurgery.date} at {selectedSurgery.time}</p>
-              <p><strong>Operating Room:</strong> {selectedSurgery.or}</p>
-              <p><strong>Expected Duration:</strong> {selectedSurgery.duration}</p>
-              <p><strong>AI Assisted:</strong> {selectedSurgery.aiAssist ? 'Yes' : 'No'}</p>
-              <p><strong>Status:</strong> <Badge className={getStatusBadge(selectedSurgery.status)}>{selectedSurgery.status}</Badge></p>
-              {selectedSurgery.notes && <p><strong>Notes:</strong> {selectedSurgery.notes}</p>}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDetailsModalOpen(false)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
       
-      {/* Edit Surgery Modal (Conceptual) */}
+      {/* Edit Surgery Modal */}
       {selectedSurgery && (
          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Edit Surgery: {selectedSurgery.id}</DialogTitle>
-                    <DialogDescription>Modify details for {selectedSurgery.procedure}. This is a mock form.</DialogDescription>
+                    <DialogDescription>Modify details for {selectedSurgery.procedure}.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="edit-procedure" className="text-right">Procedure</Label>
-                        <Input id="edit-procedure" defaultValue={selectedSurgery.procedure} className="col-span-3 bg-input" />
+                <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-2">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="edit-procedure">Procedure</Label>
+                        <Input id="edit-procedure" name="procedure" value={editFormData?.procedure || ''} onChange={handleEditFormChange} className="bg-input" />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="edit-status" className="text-right">Status</Label>
-                         <select id="edit-status" defaultValue={selectedSurgery.status} className="col-span-3 p-2 border rounded-md bg-input">
-                            <option value="Scheduled">Scheduled</option>
-                            <option value="Pending Confirmation">Pending Confirmation</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Cancelled">Cancelled</option>
-                        </select>
+                     <div className="space-y-1.5">
+                        <Label htmlFor="edit-surgeon">Surgeon</Label>
+                        <Input id="edit-surgeon" name="surgeon" value={editFormData?.surgeon || ''} onChange={handleEditFormChange} className="bg-input" />
+                    </div>
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-or">Operating Room</Label>
+                            <Input id="edit-or" name="or" value={editFormData?.or || ''} onChange={handleEditFormChange} className="bg-input" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="edit-time">Time</Label>
+                            <Input id="edit-time" name="time" type="time" value={editFormData?.time ? editFormData.time.replace(" AM", "").replace(" PM", "") : ''} onChange={handleEditFormChange} className="bg-input" />
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="edit-status">Status</Label>
+                         <Select name="status" value={editFormData?.status || ''} onValueChange={(value) => handleEditFormSelectChange('status', value)}>
+                            <SelectTrigger className="w-full bg-input"><SelectValue placeholder="Select status" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Scheduled">Scheduled</SelectItem>
+                                <SelectItem value="Pending Confirmation">Pending Confirmation</SelectItem>
+                                <SelectItem value="In Progress">In Progress</SelectItem>
+                                <SelectItem value="Completed">Completed</SelectItem>
+                                <SelectItem value="Cancelled">Cancelled</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="space-y-1.5">
+                        <Label htmlFor="edit-aiAssist">AI Assisted</Label>
+                         <Select name="aiAssist" value={editFormData?.aiAssist ? "true" : "false"} onValueChange={(value) => handleEditFormSelectChange('aiAssist', value === "true")}>
+                            <SelectTrigger className="w-full bg-input"><SelectValue placeholder="AI Assistance" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="true">Yes</SelectItem>
+                                <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="edit-notes">Notes</Label>
+                        <Textarea id="edit-notes" name="notes" value={editFormData?.notes || ''} onChange={handleEditFormChange} className="bg-input min-h-[80px]" />
                     </div>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-                    <Button type="submit" onClick={() => { alert('Mock Save Action!'); setIsEditModalOpen(false); }}>Save Changes</Button>
+                    <Button type="submit" onClick={handleSaveChanges}>Save Changes</Button>
                 </DialogFooter>
             </DialogContent>
          </Dialog>
@@ -238,5 +283,3 @@ export default function DoctorSurgerySchedulePage() {
     </div>
   );
 }
-
-    

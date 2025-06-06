@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, Search, CheckCircle } from "lucide-react";
+import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, Search, CheckCircle, CalendarPlus } from "lucide-react";
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const prescriptionSchema = z.object({
   patientId: z.string().min(1, "Please select a patient."),
@@ -22,8 +23,8 @@ const prescriptionSchema = z.object({
   dosage: z.string().min(1, "Dosage is required."),
   frequency: z.string().min(1, "Frequency is required."),
   duration: z.string().optional(),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
-  refills: z.coerce.number().min(0, "Refills cannot be negative."),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1.").optional(),
+  refills: z.coerce.number().min(0, "Refills cannot be negative.").optional(),
   notes: z.string().optional(),
 });
 
@@ -34,9 +35,11 @@ const mockPatientsForPrescribe = [
   { id: "P002", name: "Jane A. Smith" },
   { id: "P003", name: "Alice B. Brown" },
   { id: "P004", name: "Robert C. Johnson" },
+  { id: "P005", name: "Emily K. Davis" },
+  { id: "P006", name: "Michael P. Wilson" },
 ];
 
-const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule"];
+const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule", "Ibuprofen 200mg Tablet", "Paracetamol 500mg Tablet"];
 
 export default function DoctorPrescribePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,14 +57,14 @@ export default function DoctorPrescribePage() {
       dosage: "",
       frequency: "",
       duration: "",
-      quantity: undefined, // Use undefined for number inputs to allow placeholder
+      quantity: undefined,
       refills: 0,
       notes: "",
     }
   });
   
   useEffect(() => {
-    if (patientIdFromQuery) {
+    if (patientIdFromQuery && mockPatientsForPrescribe.find(p => p.id === patientIdFromQuery)) {
       form.setValue('patientId', patientIdFromQuery);
     }
   }, [patientIdFromQuery, form]);
@@ -72,10 +75,12 @@ export default function DoctorPrescribePage() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log("Prescription Data:", data);
+    const patientName = mockPatientsForPrescribe.find(p => p.id === data.patientId)?.name || data.patientId;
     toast({
       title: "e-Prescription Sent!",
-      description: `Prescription for ${data.drugName} for patient ID ${data.patientId} has been submitted.`,
+      description: `Prescription for ${data.drugName} for patient ${patientName} has been submitted. (Mock Action)`,
       variant: 'default',
+      duration: 5000,
     });
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -84,12 +89,17 @@ export default function DoctorPrescribePage() {
   
   if (isSubmitted) {
     return (
-      <div className="space-y-6 flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+      <div className="space-y-6 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center">
         <CheckCircle className="w-24 h-24 text-green-500 mb-4" />
         <PageHeader title="e-Prescription Submitted!" description="The prescription has been successfully processed (mock)." />
-        <Button onClick={() => { setIsSubmitted(false); form.reset({ patientId: patientIdFromQuery || "", refills: 0 }); }} className="mt-6">
-          Create Another Prescription
-        </Button>
+        <div className="flex gap-4 mt-6">
+            <Button onClick={() => { setIsSubmitted(false); form.reset({ patientId: patientIdFromQuery || "", refills: 0, quantity: undefined }); }}>
+            Create Another Prescription
+            </Button>
+            <Button variant="outline" asChild>
+                <Link href="/doctor/dashboard">Back to Dashboard</Link>
+            </Button>
+        </div>
       </div>
     );
   }
@@ -117,8 +127,8 @@ export default function DoctorPrescribePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-semibold">Patient</FormLabel>
-                     <div className="flex gap-2">
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!!patientIdFromQuery}>
+                     <div className="flex gap-2 items-center">
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!!patientIdFromQuery && mockPatientsForPrescribe.some(p=>p.id === patientIdFromQuery)}>
                             <FormControl>
                                 <SelectTrigger className="bg-input focus:ring-primary flex-1"><UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select patient" /></SelectTrigger>
                             </FormControl>
@@ -126,9 +136,12 @@ export default function DoctorPrescribePage() {
                                 {mockPatientsForPrescribe.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.id})</SelectItem>)}
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" disabled><Search className="h-4 w-4"/></Button>
+                        <Button variant="outline" disabled type="button"><Search className="h-4 w-4"/></Button>
                      </div>
                     <FormMessage />
+                    {!field.value && patientIdFromQuery && !mockPatientsForPrescribe.some(p=>p.id === patientIdFromQuery) && (
+                        <p className="text-sm text-destructive mt-1">Patient ID '{patientIdFromQuery}' from query not found. Please select from list.</p>
+                    )}
                   </FormItem>
                 )}
               />
@@ -146,10 +159,9 @@ export default function DoctorPrescribePage() {
                             </FormControl>
                             <SelectContent>
                                 {commonDrugs.map(drug => <SelectItem key={drug} value={drug}>{drug}</SelectItem>)}
-                                <SelectItem value="Other">Other (Type Manually)</SelectItem>
+                                {/* If you want to allow typing, this would need to be a Combobox component */}
                             </SelectContent>
                         </Select>
-                      {/* If 'Other' is selected, an Input could appear here */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -196,7 +208,14 @@ export default function DoctorPrescribePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Quantity</FormLabel>
-                      <Input {...field} type="number" placeholder="e.g., 30" className="bg-input focus:ring-primary" onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} />
+                      <Input 
+                        {...field} 
+                        type="number" 
+                        placeholder="e.g., 30" 
+                        className="bg-input focus:ring-primary" 
+                        value={field.value === undefined ? '' : field.value}
+                        onChange={e => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value, 10))} 
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -208,7 +227,10 @@ export default function DoctorPrescribePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-semibold">Refills</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} value={field.value?.toString()}>
+                    <Select 
+                        onValueChange={(value) => field.onChange(value === '' ? undefined : parseInt(value,10))} 
+                        value={field.value === undefined ? '' : field.value.toString()}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-input focus:ring-primary w-full md:w-[200px]"><Repeat className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Number of refills" /></SelectTrigger>
                       </FormControl>
@@ -239,9 +261,9 @@ export default function DoctorPrescribePage() {
                 )}
               />
               
-              <div className="flex items-center p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md text-sm text-yellow-700">
-                <AlertTriangle className="h-5 w-5 mr-2 shrink-0" />
-                <p>Please double-check all prescription details for accuracy before submission. This system is for demonstration purposes.</p>
+              <div className="flex items-start p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md text-sm text-yellow-700 dark:text-yellow-300 dark:bg-yellow-700/20">
+                <AlertTriangle className="h-5 w-5 mr-2 shrink-0 mt-0.5" />
+                <p>Please double-check all prescription details for accuracy before submission. This system is for demonstration purposes only and does not send real prescriptions.</p>
               </div>
 
               <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isSubmitting}>
@@ -254,5 +276,3 @@ export default function DoctorPrescribePage() {
     </div>
   );
 }
-
-    
