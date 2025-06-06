@@ -1,0 +1,146 @@
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LayoutDashboard, Users, MessageSquare, FileEdit, ClipboardPlus, Bot, AlertTriangle, CalendarClock } from "lucide-react";
+import Link from "next/link";
+
+const mockPatients = [
+  { id: "P001", name: "John Doe", status: "Stable", lastVisit: "2024-07-15", alerts: 0 },
+  { id: "P002", name: "Jane Smith", status: "Critical", lastVisit: "2024-07-20", alerts: 2 },
+  { id: "P003", name: "Alice Brown", status: "Improving", lastVisit: "2024-07-18", alerts: 0 },
+  { id: "P004", name: "Robert Johnson", status: "Stable", lastVisit: "2024-07-19", alerts: 0 },
+];
+
+export default function DoctorDashboardPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Doctor Dashboard" description="Manage patients, consultations, and schedules." icon={LayoutDashboard} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><Users className="w-5 h-5" />Patient Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
+              <p className="text-foreground">Total Patients:</p>
+              <p className="font-bold text-lg text-primary">124</p>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
+              <p className="text-foreground">Critical Alerts:</p>
+              <p className="font-bold text-lg text-destructive">3</p>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
+              <p className="text-foreground">Upcoming Appointments:</p>
+              <p className="font-bold text-lg text-accent">7</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center gap-2"><Bot className="w-5 h-5" />AI-Augmented Consults</CardTitle>
+            <CardDescription className="text-primary-foreground/80">Leverage Zizo_MediAI for enhanced diagnostics.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm mb-4">Start AI-assisted sessions, access advanced diagnostic tools, and streamline your workflow.</p>
+          </CardContent>
+          <CardFooter>
+            <Button asChild variant="outline" className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">
+              <Link href="/doctor/live-consults">Start New Consult</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        <Card className="shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><CalendarClock className="w-5 h-5" />Surgery Schedule</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">No surgeries scheduled for today.</p>
+            <p className="text-xs text-muted-foreground mt-1">AI-assisted scheduling coming soon.</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" disabled className="w-full">View Full Schedule</Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <Card className="shadow-lg rounded-xl">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><Users className="w-5 h-5" />Patient List</CardTitle>
+            <Input placeholder="Search patients..." className="max-w-xs bg-input" />
+          </div>
+          <CardDescription>Quick access to patient records and status.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Patient ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last Visit</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockPatients.map((patient) => (
+                <TableRow key={patient.id}>
+                  <TableCell className="font-medium">{patient.id}</TableCell>
+                  <TableCell>{patient.name}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      patient.status === "Critical" ? "bg-red-500/20 text-red-700" :
+                      patient.status === "Improving" ? "bg-yellow-500/20 text-yellow-700" :
+                      "bg-green-500/20 text-green-700"
+                    }`}>
+                      {patient.status}
+                      {patient.alerts > 0 && <AlertTriangle className="inline-block ml-1 h-3 w-3 text-red-500" />}
+                    </span>
+                  </TableCell>
+                  <TableCell>{patient.lastVisit}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" disabled>View Details</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" disabled className="w-full">Load More Patients</Button>
+        </CardFooter>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><FileEdit className="w-5 h-5" />Digital Charts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">Annotate patient records, upload imaging, and manage charts digitally. (Feature in development)</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" disabled className="w-full">Access Charting System</Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><ClipboardPlus className="w-5 h-5" />Prescribe Module</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">Create e-Prescriptions and integrate with pharmacy systems. (Feature in development)</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" disabled className="w-full">Create New e-Rx</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+}
