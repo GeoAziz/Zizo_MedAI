@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, Search } from "lucide-react";
+import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, Search, CheckCircle } from "lucide-react";
+import { useSearchParams } from 'next/navigation';
 
 const prescriptionSchema = z.object({
   patientId: z.string().min(1, "Please select a patient."),
@@ -21,31 +22,50 @@ const prescriptionSchema = z.object({
   dosage: z.string().min(1, "Dosage is required."),
   frequency: z.string().min(1, "Frequency is required."),
   duration: z.string().optional(),
-  quantity: z.string().min(1, "Quantity is required."),
-  refills: z.string().min(1, "Number of refills is required."),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
+  refills: z.coerce.number().min(0, "Refills cannot be negative."),
   notes: z.string().optional(),
 });
 
 type PrescriptionFormValues = z.infer<typeof prescriptionSchema>;
 
 const mockPatientsForPrescribe = [
-  { id: "P001", name: "John Doe" },
-  { id: "P002", name: "Jane Smith" },
-  { id: "P003", name: "Alice Brown" },
+  { id: "P001", name: "Johnathan P. Doe" },
+  { id: "P002", name: "Jane A. Smith" },
+  { id: "P003", name: "Alice B. Brown" },
+  { id: "P004", name: "Robert C. Johnson" },
 ];
 
-const commonDrugs = ["Lisinopril", "Amoxicillin", "Metformin", "Atorvastatin", "Albuterol Inhaler"];
+const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule"];
 
 export default function DoctorPrescribePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const patientIdFromQuery = searchParams.get('patientId');
+
 
   const form = useForm<PrescriptionFormValues>({
     resolver: zodResolver(prescriptionSchema),
     defaultValues: {
-      refills: "0",
+      patientId: patientIdFromQuery || "",
+      drugName: "",
+      dosage: "",
+      frequency: "",
+      duration: "",
+      quantity: undefined, // Use undefined for number inputs to allow placeholder
+      refills: 0,
+      notes: "",
     }
   });
+  
+  useEffect(() => {
+    if (patientIdFromQuery) {
+      form.setValue('patientId', patientIdFromQuery);
+    }
+  }, [patientIdFromQuery, form]);
+
 
   const onSubmit: SubmitHandler<PrescriptionFormValues> = async (data) => {
     setIsSubmitting(true);
@@ -55,10 +75,25 @@ export default function DoctorPrescribePage() {
     toast({
       title: "e-Prescription Sent!",
       description: `Prescription for ${data.drugName} for patient ID ${data.patientId} has been submitted.`,
+      variant: 'default',
     });
     setIsSubmitting(false);
-    form.reset({ refills: "0" });
+    setIsSubmitted(true);
+    // form.reset(); // Keep form data for potential review or reset manually
   };
+  
+  if (isSubmitted) {
+    return (
+      <div className="space-y-6 flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+        <CheckCircle className="w-24 h-24 text-green-500 mb-4" />
+        <PageHeader title="e-Prescription Submitted!" description="The prescription has been successfully processed (mock)." />
+        <Button onClick={() => { setIsSubmitted(false); form.reset({ patientId: patientIdFromQuery || "", refills: 0 }); }} className="mt-6">
+          Create Another Prescription
+        </Button>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-6">
@@ -83,7 +118,7 @@ export default function DoctorPrescribePage() {
                   <FormItem>
                     <FormLabel className="font-semibold">Patient</FormLabel>
                      <div className="flex gap-2">
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!!patientIdFromQuery}>
                             <FormControl>
                                 <SelectTrigger className="bg-input focus:ring-primary flex-1"><UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select patient" /></SelectTrigger>
                             </FormControl>
@@ -105,7 +140,7 @@ export default function DoctorPrescribePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Drug Name</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                                 <SelectTrigger className="bg-input focus:ring-primary"><Pill className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select or type drug" /></SelectTrigger>
                             </FormControl>
@@ -114,8 +149,7 @@ export default function DoctorPrescribePage() {
                                 <SelectItem value="Other">Other (Type Manually)</SelectItem>
                             </SelectContent>
                         </Select>
-                      {/* Fallback input if needed */}
-                      {/* <Input {...field} placeholder="e.g., Amoxicillin 250mg" className="bg-input focus:ring-primary"/> */}
+                      {/* If 'Other' is selected, an Input could appear here */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -126,7 +160,7 @@ export default function DoctorPrescribePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Dosage & Strength</FormLabel>
-                      <Input {...field} placeholder="e.g., 250mg, 1 tablet" className="bg-input focus:ring-primary"/>
+                      <Input {...field} placeholder="e.g., 1 tablet, 10ml" className="bg-input focus:ring-primary"/>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -140,7 +174,7 @@ export default function DoctorPrescribePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Frequency</FormLabel>
-                      <Input {...field} placeholder="e.g., Twice daily" className="bg-input focus:ring-primary"/>
+                      <Input {...field} placeholder="e.g., Twice daily, QID" className="bg-input focus:ring-primary"/>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -162,7 +196,7 @@ export default function DoctorPrescribePage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Quantity</FormLabel>
-                      <Input {...field} type="number" placeholder="e.g., 30" className="bg-input focus:ring-primary"/>
+                      <Input {...field} type="number" placeholder="e.g., 30" className="bg-input focus:ring-primary" onChange={e => field.onChange(parseInt(e.target.value, 10) || undefined)} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -174,7 +208,7 @@ export default function DoctorPrescribePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-semibold">Refills</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value, 10))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger className="bg-input focus:ring-primary w-full md:w-[200px]"><Repeat className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Number of refills" /></SelectTrigger>
                       </FormControl>
@@ -221,3 +255,4 @@ export default function DoctorPrescribePage() {
   );
 }
 
+    

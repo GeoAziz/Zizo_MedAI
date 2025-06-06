@@ -1,3 +1,4 @@
+
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -63,16 +64,18 @@ export default function DoctorDashboardPage() {
             <p className="text-xs text-muted-foreground mt-1">AI-assisted scheduling coming soon.</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" disabled className="w-full">View Full Schedule</Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/doctor/surgery-schedule">View Full Schedule</Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>
 
       <Card className="shadow-lg rounded-xl">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><Users className="w-5 h-5" />Patient List</CardTitle>
-            <Input placeholder="Search patients..." className="max-w-xs bg-input" />
+            <Input placeholder="Search patients..." className="max-w-xs bg-input" disabled/>
           </div>
           <CardDescription>Quick access to patient records and status.</CardDescription>
         </CardHeader>
@@ -104,7 +107,9 @@ export default function DoctorDashboardPage() {
                   </TableCell>
                   <TableCell>{patient.lastVisit}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" disabled>View Details</Button>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/doctor/patient-list?patientId=${patient.id}`}>View Details</Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -112,7 +117,9 @@ export default function DoctorDashboardPage() {
           </Table>
         </CardContent>
         <CardFooter>
-          <Button variant="outline" disabled className="w-full">Load More Patients</Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/doctor/patient-list">Load More Patients</Link>
+          </Button>
         </CardFooter>
       </Card>
 
@@ -122,10 +129,12 @@ export default function DoctorDashboardPage() {
             <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><FileEdit className="w-5 h-5" />Digital Charts</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Annotate patient records, upload imaging, and manage charts digitally. (Feature in development)</p>
+            <p className="text-muted-foreground">Annotate patient records, upload imaging, and manage charts digitally.</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" disabled className="w-full">Access Charting System</Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/doctor/charts">Access Charting System</Link>
+            </Button>
           </CardFooter>
         </Card>
 
@@ -134,13 +143,17 @@ export default function DoctorDashboardPage() {
             <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><ClipboardPlus className="w-5 h-5" />Prescribe Module</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Create e-Prescriptions and integrate with pharmacy systems. (Feature in development)</p>
+            <p className="text-muted-foreground">Create e-Prescriptions and integrate with pharmacy systems.</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" disabled className="w-full">Create New e-Rx</Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/doctor/prescribe">Create New e-Rx</Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>
     </div>
   );
 }
+
+    

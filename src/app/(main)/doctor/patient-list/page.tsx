@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Users, Search, Filter, UserPlus, AlertTriangle, Eye, MessageCircle, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const mockPatientsData = [
   { id: "P001", name: "Johnathan P. Doe", age: 38, gender: "Male", lastVisit: "2024-07-15", condition: "Hypertension", status: "Stable", alerts: 0, nextAppointment: "2024-09-01" },
@@ -117,9 +118,21 @@ export default function DoctorPatientListPage() {
                     </TableCell>
                     <TableCell>{patient.nextAppointment}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="icon" disabled><Eye className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" disabled><MessageCircle className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" disabled><FileText className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/doctor/charts?patientId=${patient.id}`} title="View Chart">
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/doctor/live-consults?patientId=${patient.id}`} title="Start Consult">
+                          <MessageCircle className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                       <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/doctor/prescribe?patientId=${patient.id}`} title="New Prescription">
+                          <FileText className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -141,3 +154,5 @@ export default function DoctorPatientListPage() {
     </div>
   );
 }
+
+    

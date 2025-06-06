@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, UserCircle, Video, Mic, Send, Paperclip, Sparkles, Brain, Activity } from "lucide-react";
+import { Bot, UserCircle, Video, Mic, Send, Paperclip, Sparkles, Brain, Activity, FileText, BarChart3 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Message {
   id: string;
@@ -18,13 +19,24 @@ interface Message {
   timestamp: string;
 }
 
+const mockPatientDetails = {
+  id: "P001",
+  name: "John Doe",
+  age: 38,
+  condition: "Hypertension, Asthma",
+  symptoms: "Persistent cough, mild fever.",
+  medicalHistory: "Asthma diagnosed in childhood, seasonal allergies.",
+};
+
 export default function DoctorLiveConsultsPage() {
   const [isConsultActive, setIsConsultActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
+    // Ensure this runs only on the client
+    setCurrentTime(new Date().toLocaleTimeString());
     const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -32,7 +44,7 @@ export default function DoctorLiveConsultsPage() {
   const handleStartConsult = () => {
     setIsConsultActive(true);
     setMessages([
-      { id: '1', sender: 'ai', text: "Zizo_MediAI: Hello Dr. Smith. Patient John Doe (P001) is ready for consultation. Symptoms: persistent cough, mild fever. Medical history: Asthma.", timestamp: new Date().toLocaleTimeString() }
+      { id: '1', sender: 'ai', text: `Zizo_MediAI: Hello Dr. Welcome. Patient ${mockPatientDetails.name} (${mockPatientDetails.id}) is ready for consultation. Reported Symptoms: ${mockPatientDetails.symptoms} Medical history: ${mockPatientDetails.medicalHistory}`, timestamp: new Date().toLocaleTimeString() }
     ]);
   };
 
@@ -52,7 +64,7 @@ export default function DoctorLiveConsultsPage() {
       setMessages(prev => [...prev, {
         id: (prev.length + 1).toString(),
         sender: 'ai',
-        text: "Zizo_MediAI: Processing... Considering differential diagnoses: Viral bronchitis, Common cold, Allergic reaction. Recommend checking temperature and lung sounds.",
+        text: "Zizo_MediAI: Processing... Considering differential diagnoses based on symptoms. Would you like me to suggest potential diagnoses or relevant tests?",
         timestamp: new Date().toLocaleTimeString()
       }]);
     }, 1500);
@@ -70,9 +82,10 @@ export default function DoctorLiveConsultsPage() {
           <CardContent className="min-h-[300px] flex flex-col items-center justify-center">
             <Bot className="h-24 w-24 text-primary/50 mb-6" />
             <p className="text-muted-foreground mb-4">No active consultation. Ready to begin.</p>
-            <Input type="text" placeholder="Enter Patient ID or Name to start..." className="max-w-sm mx-auto mb-4 bg-input" disabled/>
+            {/* This could be a Select component or an Input with search in a real app */}
+            <Input type="text" placeholder="Enter Patient ID (e.g., P001)" defaultValue="P001" className="max-w-sm mx-auto mb-4 bg-input"/>
             <Button size="lg" onClick={handleStartConsult} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Sparkles className="mr-2 h-5 w-5" /> Start Mock Consult with P001
+              <Sparkles className="mr-2 h-5 w-5" /> Start Consult with {mockPatientDetails.name}
             </Button>
           </CardContent>
         </Card>
@@ -83,7 +96,7 @@ export default function DoctorLiveConsultsPage() {
   return (
     <div className="space-y-6 h-full flex flex-col">
       <PageHeader 
-        title="Live Consult: John Doe (P001)" 
+        title={`Live Consult: ${mockPatientDetails.name} (${mockPatientDetails.id})`}
         description={`Ongoing AI-augmented session. Current time: ${currentTime}`}
         icon={Bot}
         actions={<Button variant="destructive" onClick={() => setIsConsultActive(false)}>End Consultation</Button>}
@@ -92,8 +105,8 @@ export default function DoctorLiveConsultsPage() {
         {/* Main Panel: Video & Patient Info */}
         <Card className="lg:col-span-2 shadow-xl rounded-xl flex flex-col">
           <CardHeader className="flex-shrink-0">
-            <CardTitle className="font-headline text-xl">Patient: John Doe <Badge variant="secondary">P001</Badge></CardTitle>
-            <CardDescription>Age: 38 | Condition: Hypertension, Asthma</CardDescription>
+            <CardTitle className="font-headline text-xl">Patient: {mockPatientDetails.name} <Badge variant="secondary">{mockPatientDetails.id}</Badge></CardTitle>
+            <CardDescription>Age: {mockPatientDetails.age} | Known Conditions: {mockPatientDetails.condition}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col items-center justify-center bg-secondary/30 p-2 relative overflow-hidden">
             <Image 
@@ -107,6 +120,10 @@ export default function DoctorLiveConsultsPage() {
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 bg-card/80 p-3 rounded-lg shadow-lg">
               <Button variant="outline" size="icon" disabled><Video className="h-5 w-5"/></Button>
               <Button variant="outline" size="icon" disabled><Mic className="h-5 w-5"/></Button>
+            </div>
+             <div className="absolute top-4 right-4 flex flex-col gap-2">
+                <Button variant="outline" size="sm" asChild><Link href={`/doctor/charts?patientId=${mockPatientDetails.id}`}><BarChart3 className="mr-2 h-4 w-4"/>View Chart</Link></Button>
+                <Button variant="outline" size="sm" asChild><Link href={`/doctor/prescribe?patientId=${mockPatientDetails.id}`}><FileText className="mr-2 h-4 w-4"/>e-Prescribe</Link></Button>
             </div>
           </CardContent>
         </Card>
@@ -135,10 +152,11 @@ export default function DoctorLiveConsultsPage() {
               ))}
             </ScrollArea>
             <div className="border-t p-4 space-y-2 flex-shrink-0">
-                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled><Activity className="mr-1 h-4 w-4"/> Vitals</Button>
+                 <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" size="sm" disabled><Activity className="mr-1 h-4 w-4"/> Check Vitals</Button>
                     <Button variant="outline" size="sm" disabled><Sparkles className="mr-1 h-4 w-4"/> Suggest Dx</Button>
                     <Button variant="outline" size="sm" disabled>Order Test</Button>
+                    <Button variant="outline" size="sm" disabled>Summarize</Button>
                 </div>
             </div>
           </CardContent>
@@ -160,3 +178,5 @@ export default function DoctorLiveConsultsPage() {
     </div>
   );
 }
+
+    

@@ -6,37 +6,83 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarDays, Bot, Stethoscope, Clock, Users, PlusCircle, Filter } from "lucide-react";
+import { CalendarDays, Bot, Stethoscope, Clock, Users, PlusCircle, Filter, Edit, Trash2, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 
-const mockSurgeries = [
-  { id: "S001", patientName: "Robert Johnson", patientId: "P004", procedure: "Knee Arthroscopy", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true },
-  { id: "S002", patientName: "Alice Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true },
-  { id: "S003", patientName: "David Lee", patientId: "P007", procedure: "Cataract Surgery", surgeon: "Dr. Emily Carter", or: "OR 2", date: "2024-08-11", time: "11:00 AM", duration: "1 hour", status: "Scheduled", aiAssist: false },
-  { id: "S004", patientName: "Sophia Miller", patientId: "P008", procedure: "Gallbladder Removal", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-12", time: "08:00 AM", duration: "2.5 hours", status: "Pending Confirmation", aiAssist: true },
+interface Surgery {
+  id: string;
+  patientName: string;
+  patientId: string;
+  procedure: string;
+  surgeon: string;
+  or: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:MM AM/PM
+  duration: string;
+  status: 'Scheduled' | 'Pending Confirmation' | 'Completed' | 'Cancelled' | 'In Progress';
+  aiAssist: boolean;
+  notes?: string;
+}
+
+const mockSurgeries: Surgery[] = [
+  { id: "S001", patientName: "Robert C. Johnson", patientId: "P004", procedure: "Knee Arthroscopy (Right)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true, notes: "Standard procedure, no complications expected." },
+  { id: "S002", patientName: "Alice B. Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true, notes: "Patient has mild asthma, monitor post-op breathing." },
+  { id: "S003", patientName: "David L. Lee", patientId: "P007", procedure: "Cataract Surgery (Left Eye)", surgeon: "Dr. Emily Carter", or: "OR 2", date: "2024-08-11", time: "11:00 AM", duration: "1 hour", status: "Scheduled", aiAssist: false },
+  { id: "S004", patientName: "Sophia T. Miller", patientId: "P008", procedure: "Gallbladder Removal (Laparoscopic)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-12", time: "08:00 AM", duration: "2.5 hours", status: "Pending Confirmation", aiAssist: true },
+  { id: "S005", patientName: "Michael P. Wilson", patientId: "P006", procedure: "Coronary Artery Bypass Graft (CABG x3)", surgeon: "Dr. Eva Core", or: "OR 4 (Cardiac)", date: "2024-08-12", time: "12:00 PM", duration: "5 hours", status: "Scheduled", aiAssist: true, notes: "High-risk patient due to comorbidities." },
+  { id: "S006", patientName: "Jane A. Smith", patientId: "P002", procedure: "Diabetic Foot Debridement", surgeon: "Dr. Ken Miles", or: "OR 2", date: "2024-08-10", time: "04:00 PM", duration: "45 mins", status: "Completed", aiAssist: false, notes: "Wound healing well." },
 ];
 
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: Surgery['status']) => {
   switch (status) {
-    case "Scheduled": return "bg-green-500/20 text-green-700";
+    case "Scheduled": return "bg-blue-500/20 text-blue-700";
     case "Pending Confirmation": return "bg-yellow-500/20 text-yellow-700";
-    case "Completed": return "bg-blue-500/20 text-blue-700";
+    case "Completed": return "bg-green-500/20 text-green-700";
     case "Cancelled": return "bg-red-500/20 text-red-700";
+    case "In Progress": return "bg-purple-500/20 text-purple-700 animate-pulse";
     default: return "bg-gray-500/20 text-gray-700";
   }
 };
 
 export default function DoctorSurgerySchedulePage() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10"));
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10T00:00:00")); // Set specific date for initial view
+  const [surgeries, setSurgeries] = useState<Surgery[]>(mockSurgeries);
+  const [selectedSurgery, setSelectedSurgery] = useState<Surgery | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const filteredSurgeries = selectedDate 
-    ? mockSurgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd"))
-    : mockSurgeries;
+    ? surgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd"))
+    : surgeries;
+
+  const openDetailsModal = (surgery: Surgery) => {
+    setSelectedSurgery(surgery);
+    setIsDetailsModalOpen(true);
+  };
+  
+  // Edit modal logic would go here (form handling, etc.)
+  // For prototype, just opening/closing
+  const openEditModal = (surgery: Surgery) => {
+    setSelectedSurgery(surgery);
+    setIsEditModalOpen(true);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -78,7 +124,6 @@ export default function DoctorSurgerySchedulePage() {
                   <TableHead>Surgeon</TableHead>
                   <TableHead>OR</TableHead>
                   <TableHead>Time</TableHead>
-                  <TableHead>Duration</TableHead>
                   <TableHead>AI Assist</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -93,15 +138,15 @@ export default function DoctorSurgerySchedulePage() {
                     <TableCell>{surgery.surgeon}</TableCell>
                     <TableCell>{surgery.or}</TableCell>
                     <TableCell>{surgery.time}</TableCell>
-                    <TableCell>{surgery.duration}</TableCell>
                     <TableCell className="text-center">
-                      {surgery.aiAssist && <Bot className="h-5 w-5 text-primary inline-block" title="AI-Assisted"/>}
+                      {surgery.aiAssist ? <Bot className="h-5 w-5 text-primary inline-block" title="AI-Assisted"/> : <Stethoscope className="h-5 w-5 text-muted-foreground inline-block" title="Conventional"/>}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusBadge(surgery.status)}>{surgery.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" disabled>Details</Button>
+                    <TableCell className="text-right space-x-1">
+                      <Button variant="ghost" size="icon" onClick={() => openDetailsModal(surgery)} title="View Details"><Eye className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => openEditModal(surgery)} title="Edit Surgery" disabled={surgery.status === 'Completed' || surgery.status === 'Cancelled'}><Edit className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -114,7 +159,7 @@ export default function DoctorSurgerySchedulePage() {
             </div>
           )}
         </CardContent>
-         {mockSurgeries.length > 0 && (
+         {surgeries.length > 0 && (
           <CardFooter className="flex justify-center">
             <Button variant="outline" disabled>Load More Surgeries</Button>
           </CardFooter>
@@ -132,6 +177,66 @@ export default function DoctorSurgerySchedulePage() {
             <Button variant="outline" disabled className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">Access AI Planner</Button>
           </CardFooter>
         </Card>
+
+      {/* Surgery Details Modal */}
+      {selectedSurgery && (
+        <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Surgery Details: {selectedSurgery.id}</DialogTitle>
+              <DialogDescription>Procedure: {selectedSurgery.procedure}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-3">
+              <p><strong>Patient:</strong> {selectedSurgery.patientName} ({selectedSurgery.patientId})</p>
+              <p><strong>Surgeon:</strong> {selectedSurgery.surgeon}</p>
+              <p><strong>Date & Time:</strong> {selectedSurgery.date} at {selectedSurgery.time}</p>
+              <p><strong>Operating Room:</strong> {selectedSurgery.or}</p>
+              <p><strong>Expected Duration:</strong> {selectedSurgery.duration}</p>
+              <p><strong>AI Assisted:</strong> {selectedSurgery.aiAssist ? 'Yes' : 'No'}</p>
+              <p><strong>Status:</strong> <Badge className={getStatusBadge(selectedSurgery.status)}>{selectedSurgery.status}</Badge></p>
+              {selectedSurgery.notes && <p><strong>Notes:</strong> {selectedSurgery.notes}</p>}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDetailsModalOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Edit Surgery Modal (Conceptual) */}
+      {selectedSurgery && (
+         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Edit Surgery: {selectedSurgery.id}</DialogTitle>
+                    <DialogDescription>Modify details for {selectedSurgery.procedure}. This is a mock form.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="edit-procedure" className="text-right">Procedure</Label>
+                        <Input id="edit-procedure" defaultValue={selectedSurgery.procedure} className="col-span-3 bg-input" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="edit-status" className="text-right">Status</Label>
+                         <select id="edit-status" defaultValue={selectedSurgery.status} className="col-span-3 p-2 border rounded-md bg-input">
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Pending Confirmation">Pending Confirmation</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+                    <Button type="submit" onClick={() => { alert('Mock Save Action!'); setIsEditModalOpen(false); }}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+         </Dialog>
+      )}
+
     </div>
   );
 }
+
+    
