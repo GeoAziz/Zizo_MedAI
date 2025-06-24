@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Waypoints, CheckCircle, Send, AlertTriangle, Drone, Ambulance, UserCheck, MapPin } from "lucide-react";
+import { Waypoints, CheckCircle, Send, AlertTriangle, Orbit, Ambulance, UserCheck, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from 'next/image';
 
@@ -43,7 +43,7 @@ const mockIncidents: Incident[] = [
 ];
 
 const getResourceIcon = (type: Resource['type']) => {
-  if (type === "Drone") return <Drone className="h-5 w-5 text-primary" />;
+  if (type === "Drone") return <Orbit className="h-5 w-5 text-primary" />;
   if (type === "Ambulance") return <Ambulance className="h-5 w-5 text-red-500" />;
   if (type === "Medical Staff") return <UserCheck className="h-5 w-5 text-green-600" />;
   return null;
