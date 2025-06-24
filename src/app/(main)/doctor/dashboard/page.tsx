@@ -6,15 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LayoutDashboard, Users, MessageSquare, FileEdit, ClipboardPlus, Bot, AlertTriangle, CalendarClock } from "lucide-react";
 import Link from "next/link";
+import { getPatients } from "@/services/users";
+import type { PatientRecord } from "@/services/users";
 
-const mockPatients = [
-  { id: "P001", name: "John Doe", status: "Stable", lastVisit: "2024-07-15", alerts: 0 },
-  { id: "P002", name: "Jane Smith", status: "Critical", lastVisit: "2024-07-20", alerts: 2 },
-  { id: "P003", name: "Alice Brown", status: "Improving", lastVisit: "2024-07-18", alerts: 0 },
-  { id: "P004", name: "Robert Johnson", status: "Stable", lastVisit: "2024-07-19", alerts: 0 },
-];
+// Augment fetched patient data with mock details for the UI
+function addMockDetailsToPatients(patients: PatientRecord[]) {
+  const statuses = ["Stable", "Critical", "Improving", "Stable"];
+  return patients.map((patient, index) => ({
+    ...patient,
+    status: statuses[index % statuses.length],
+    lastVisit: `2024-07-${15 + (index % 5)}`,
+    alerts: patient.name.includes("Jane") ? 2 : 0, // Give Jane Smith a critical alert for demo
+  }));
+}
 
-export default function DoctorDashboardPage() {
+
+export default async function DoctorDashboardPage() {
+  const realPatients = await getPatients();
+  const patientsWithDetails = addMockDetailsToPatients(realPatients);
+
   return (
     <div className="space-y-6">
       <PageHeader title="Doctor Dashboard" description="Manage patients, consultations, and schedules." icon={LayoutDashboard} />
@@ -27,11 +37,11 @@ export default function DoctorDashboardPage() {
           <CardContent className="space-y-2">
             <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
               <p className="text-foreground">Total Patients:</p>
-              <p className="font-bold text-lg text-primary">124</p>
+              <p className="font-bold text-lg text-primary">{realPatients.length}</p>
             </div>
             <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
               <p className="text-foreground">Critical Alerts:</p>
-              <p className="font-bold text-lg text-destructive">3</p>
+              <p className="font-bold text-lg text-destructive">1</p>
             </div>
             <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
               <p className="text-foreground">Upcoming Appointments:</p>
@@ -77,24 +87,24 @@ export default function DoctorDashboardPage() {
             <CardTitle className="font-headline text-xl flex items-center gap-2 text-primary"><Users className="w-5 h-5" />Patient List</CardTitle>
             <Input placeholder="Search patients..." className="max-w-xs bg-input" disabled/>
           </div>
-          <CardDescription>Quick access to patient records and status.</CardDescription>
+          <CardDescription>Quick access to your real patient records from the database.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Patient ID</TableHead>
-                <TableHead>Name</TableHead>
+                <TableHead>Patient Name</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Last Visit</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockPatients.map((patient) => (
-                <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.id}</TableCell>
-                  <TableCell>{patient.name}</TableCell>
+              {patientsWithDetails.map((patient) => (
+                <TableRow key={patient.uid}>
+                  <TableCell className="font-medium">{patient.name}</TableCell>
+                  <TableCell>{patient.email}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       patient.status === "Critical" ? "bg-red-500/20 text-red-700" :
@@ -108,7 +118,7 @@ export default function DoctorDashboardPage() {
                   <TableCell>{patient.lastVisit}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="ghost" size="sm">
-                      <Link href={`/doctor/patient-list?patientId=${patient.id}`}>View Details</Link>
+                       <Link href={`/doctor/prescribe?patientId=${patient.uid}`}>Prescribe</Link>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -118,7 +128,7 @@ export default function DoctorDashboardPage() {
         </CardContent>
         <CardFooter>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/doctor/patient-list">Load More Patients</Link>
+            <Link href="/doctor/patient-list">View All Patients</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -155,5 +165,3 @@ export default function DoctorDashboardPage() {
     </div>
   );
 }
-
-    
