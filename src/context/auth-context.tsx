@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { LucideIcon } from 'lucide-react';
@@ -18,8 +19,12 @@ export interface NavItem {
   children?: NavItem[];
 }
 
+interface AuthUser extends User {
+    name?: string; // Add name to the user object type
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   role: UserRole;
   login: (data: any) => Promise<void>;
   signUp: (data: any) => Promise<void>;
@@ -30,7 +35,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -41,14 +46,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setIsLoading(true);
       if (firebaseUser) {
-        setUser(firebaseUser);
-        // Fetch user role from Firestore
+        // Fetch user role and name from Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
           const userRole = userData.role as UserRole;
+          
+          const fullUser: AuthUser = {
+              ...firebaseUser,
+              name: userData.name || 'Anonymous'
+          };
+          setUser(fullUser);
           setRole(userRole);
+
           if (pathname === '/login' || pathname === '/register') {
             router.push(`/${userRole}/dashboard`);
           }
@@ -76,12 +87,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // onAuthStateChanged will handle the redirect
   };
 
-  const signUp = async ({ email, password, role: selectedRole }: any) => {
+  const signUp = async ({ name, email, password, role: selectedRole }: any) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
     // Create user profile in Firestore
     await setDoc(doc(db, 'users', firebaseUser.uid), {
       uid: firebaseUser.uid,
+      name: name,
       email: firebaseUser.email,
       role: selectedRole,
       createdAt: new Date(),

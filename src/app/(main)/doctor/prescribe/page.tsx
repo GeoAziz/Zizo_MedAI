@@ -7,15 +7,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, Search, CheckCircle, CalendarPlus } from "lucide-react";
+import { ClipboardList, UserSearch, Pill, Repeat, Send, AlertTriangle, CheckCircle, Search, Activity } from "lucide-react";
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { getPatients, type PatientRecord } from '@/services/users';
+import { useAuth } from '@/context/auth-context';
+import { createPrescriptionAction } from '@/actions/prescribeActions';
+
 
 const prescriptionSchema = z.object({
   patientId: z.string().min(1, "Please select a patient."),
@@ -24,30 +28,22 @@ const prescriptionSchema = z.object({
   frequency: z.string().min(1, "Frequency is required."),
   duration: z.string().optional(),
   quantity: z.coerce.number().min(1, "Quantity must be at least 1.").optional(),
-  refills: z.coerce.number().min(0, "Refills cannot be negative.").optional(),
+  refills: z.coerce.number().min(0, "Refills cannot be negative.").default(0),
   notes: z.string().optional(),
 });
 
 type PrescriptionFormValues = z.infer<typeof prescriptionSchema>;
-
-const mockPatientsForPrescribe = [
-  { id: "P001", name: "Johnathan P. Doe" },
-  { id: "P002", name: "Jane A. Smith" },
-  { id: "P003", name: "Alice B. Brown" },
-  { id: "P004", name: "Robert C. Johnson" },
-  { id: "P005", name: "Emily K. Davis" },
-  { id: "P006", name: "Michael P. Wilson" },
-];
 
 const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule", "Ibuprofen 200mg Tablet", "Paracetamol 500mg Tablet"];
 
 export default function DoctorPrescribePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId');
-
+  const { user } = useAuth();
 
   const form = useForm<PrescriptionFormValues>({
     resolver: zodResolver(prescriptionSchema),
@@ -62,39 +58,57 @@ export default function DoctorPrescribePage() {
       notes: "",
     }
   });
+
+  useEffect(() => {
+    async function fetchPatients() {
+        const fetchedPatients = await getPatients();
+        setPatients(fetchedPatients);
+    }
+    fetchPatients();
+  }, []);
   
   useEffect(() => {
-    if (patientIdFromQuery && mockPatientsForPrescribe.find(p => p.id === patientIdFromQuery)) {
+    if (patientIdFromQuery && patients.some(p => p.uid === patientIdFromQuery)) {
       form.setValue('patientId', patientIdFromQuery);
     }
-  }, [patientIdFromQuery, form]);
+  }, [patientIdFromQuery, patients, form]);
 
 
   const onSubmit: SubmitHandler<PrescriptionFormValues> = async (data) => {
+    if (!user) {
+        toast({ title: "Authentication Error", description: "You must be logged in to prescribe.", variant: "destructive" });
+        return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Prescription Data:", data);
-    const patientName = mockPatientsForPrescribe.find(p => p.id === data.patientId)?.name || data.patientId;
-    toast({
-      title: "e-Prescription Sent!",
-      description: `Prescription for ${data.drugName} for patient ${patientName} has been submitted. (Mock Action)`,
-      variant: 'default',
-      duration: 5000,
-    });
+    const result = await createPrescriptionAction(data, user.uid);
     setIsSubmitting(false);
-    setIsSubmitted(true);
-    // form.reset(); // Keep form data for potential review or reset manually
+
+    if (result.success) {
+        const patientName = patients.find(p => p.uid === data.patientId)?.name || data.patientId;
+        toast({
+          title: "e-Prescription Sent!",
+          description: `Prescription for ${data.drugName} for patient ${patientName} has been submitted.`,
+          variant: 'default',
+        });
+        setIsSubmitted(true);
+    } else {
+        toast({
+            title: "Submission Failed",
+            description: result.error || "An unknown error occurred.",
+            variant: "destructive",
+        });
+    }
   };
   
   if (isSubmitted) {
     return (
       <div className="space-y-6 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center">
         <CheckCircle className="w-24 h-24 text-green-500 mb-4" />
-        <PageHeader title="e-Prescription Submitted!" description="The prescription has been successfully processed (mock)." />
+        <PageHeader title="e-Prescription Submitted!" description="The prescription has been successfully saved to the database." />
         <div className="flex gap-4 mt-6">
-            <Button onClick={() => { setIsSubmitted(false); form.reset({ patientId: patientIdFromQuery || "", refills: 0, quantity: undefined }); }}>
-            Create Another Prescription
+            <Button onClick={() => { setIsSubmitted(false); form.reset({ patientId: "", drugName: "", dosage: "", frequency: "", duration: "", quantity: undefined, refills: 0, notes: "" }); }}>
+                Create Another Prescription
             </Button>
             <Button variant="outline" asChild>
                 <Link href="/doctor/dashboard">Back to Dashboard</Link>
@@ -103,7 +117,6 @@ export default function DoctorPrescribePage() {
       </div>
     );
   }
-
 
   return (
     <div className="space-y-6">
@@ -116,7 +129,7 @@ export default function DoctorPrescribePage() {
       <Card className="max-w-3xl mx-auto shadow-xl rounded-xl">
         <CardHeader className="bg-primary/5">
           <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><Pill className="w-6 h-6"/>Create New e-Rx</CardTitle>
-          <CardDescription>Fill patient and medication details. Ensure accuracy before submitting.</CardDescription>
+          <CardDescription>Fill patient and medication details. This form writes directly to the Firestore database.</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
           <Form {...form}>
@@ -128,20 +141,17 @@ export default function DoctorPrescribePage() {
                   <FormItem>
                     <FormLabel className="font-semibold">Patient</FormLabel>
                      <div className="flex gap-2 items-center">
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!!patientIdFromQuery && mockPatientsForPrescribe.some(p=>p.id === patientIdFromQuery)}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={patients.length === 0}>
                             <FormControl>
-                                <SelectTrigger className="bg-input focus:ring-primary flex-1"><UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select patient" /></SelectTrigger>
+                                <SelectTrigger className="bg-input focus:ring-primary flex-1"><UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder={patients.length > 0 ? "Select patient" : "Loading patients..."} /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {mockPatientsForPrescribe.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.id})</SelectItem>)}
+                                {patients.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name} ({p.uid.substring(0, 6)}...)</SelectItem>)}
                             </SelectContent>
                         </Select>
                         <Button variant="outline" disabled type="button"><Search className="h-4 w-4"/></Button>
                      </div>
                     <FormMessage />
-                    {!field.value && patientIdFromQuery && !mockPatientsForPrescribe.some(p=>p.id === patientIdFromQuery) && (
-                        <p className="text-sm text-destructive mt-1">Patient ID '{patientIdFromQuery}' from query not found. Please select from list.</p>
-                    )}
                   </FormItem>
                 )}
               />
@@ -159,7 +169,6 @@ export default function DoctorPrescribePage() {
                             </FormControl>
                             <SelectContent>
                                 {commonDrugs.map(drug => <SelectItem key={drug} value={drug}>{drug}</SelectItem>)}
-                                {/* If you want to allow typing, this would need to be a Combobox component */}
                             </SelectContent>
                         </Select>
                       <FormMessage />
@@ -263,11 +272,11 @@ export default function DoctorPrescribePage() {
               
               <div className="flex items-start p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md text-sm text-yellow-700 dark:text-yellow-300 dark:bg-yellow-700/20">
                 <AlertTriangle className="h-5 w-5 mr-2 shrink-0 mt-0.5" />
-                <p>Please double-check all prescription details for accuracy before submission. This system is for demonstration purposes only and does not send real prescriptions.</p>
+                <p>Please double-check all prescription details for accuracy before submission. This form is connected to a live database.</p>
               </div>
 
               <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : <><Send className="mr-2 h-4 w-4" /> Send e-Prescription</>}
+                {isSubmitting ? <><Activity className="mr-2 h-4 w-4 animate-spin"/>Submitting...</> : <><Send className="mr-2 h-4 w-4" /> Send e-Prescription</>}
               </Button>
             </form>
           </Form>
