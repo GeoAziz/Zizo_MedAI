@@ -40,6 +40,7 @@ export default function DoctorPrescribePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [isLoadingPatients, setIsLoadingPatients] = useState(true);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId');
@@ -61,11 +62,23 @@ export default function DoctorPrescribePage() {
 
   useEffect(() => {
     async function fetchPatients() {
-        const fetchedPatients = await getPatients();
-        setPatients(fetchedPatients);
+        setIsLoadingPatients(true);
+        try {
+            const fetchedPatients = await getPatients();
+            setPatients(fetchedPatients);
+        } catch (error) {
+            console.error("Failed to fetch patients:", error);
+            toast({
+                title: "Error fetching patients",
+                description: "Could not retrieve the patient list from the database. Please try again later.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoadingPatients(false);
+        }
     }
     fetchPatients();
-  }, []);
+  }, [toast]);
   
   useEffect(() => {
     if (patientIdFromQuery && patients.some(p => p.uid === patientIdFromQuery)) {
@@ -141,12 +154,19 @@ export default function DoctorPrescribePage() {
                   <FormItem>
                     <FormLabel className="font-semibold">Patient</FormLabel>
                      <div className="flex gap-2 items-center">
-                        <Select onValueChange={field.onChange} value={field.value} disabled={patients.length === 0}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingPatients || patients.length === 0}>
                             <FormControl>
-                                <SelectTrigger className="bg-input focus:ring-primary flex-1"><UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder={patients.length > 0 ? "Select patient" : "Loading patients..."} /></SelectTrigger>
+                                <SelectTrigger className="bg-input focus:ring-primary flex-1">
+                                    <UserSearch className="mr-2 h-4 w-4 text-muted-foreground"/> 
+                                    <SelectValue placeholder={isLoadingPatients ? "Loading patients..." : "Select patient"} />
+                                </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {patients.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name} ({p.uid.substring(0, 6)}...)</SelectItem>)}
+                                { !isLoadingPatients && patients.length === 0 ? (
+                                    <div className="text-center p-4 text-sm text-muted-foreground">No patients found.</div>
+                                ) : (
+                                    patients.map(p => <SelectItem key={p.uid} value={p.uid}>{p.name} ({p.uid.substring(0, 6)}...)</SelectItem>)
+                                )}
                             </SelectContent>
                         </Select>
                         <Button variant="outline" disabled type="button"><Search className="h-4 w-4"/></Button>
@@ -275,7 +295,7 @@ export default function DoctorPrescribePage() {
                 <p>Please double-check all prescription details for accuracy before submission. This form is connected to a live database.</p>
               </div>
 
-              <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isSubmitting}>
+              <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isSubmitting || isLoadingPatients}>
                 {isSubmitting ? <><Activity className="mr-2 h-4 w-4 animate-spin"/>Submitting...</> : <><Send className="mr-2 h-4 w-4" /> Send e-Prescription</>}
               </Button>
             </form>
