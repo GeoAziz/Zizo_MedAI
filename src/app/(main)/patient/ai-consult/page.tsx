@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { suggestDiagnosis, type SuggestDiagnosisInput, type SuggestDiagnosisOutput } from '@/ai/flows/suggest-diagnosis';
+import { generateAudio } from '@/ai/flows/generate-audio-flow';
 import { Bot, Sparkles, AlertTriangle, Activity, Lightbulb, CheckCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Image from "next/image";
@@ -22,9 +23,16 @@ const consultationSchema = z.object({
 
 type ConsultationFormValues = z.infer<typeof consultationSchema>;
 
+// New interface for holding the AI's response
+interface AiResponse {
+  diagnoses: SuggestDiagnosisOutput;
+  audioUrl?: string;
+  isGeneratingAudio?: boolean;
+}
+
 export default function AiConsultPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [diagnosisResult, setDiagnosisResult] = useState<SuggestDiagnosisOutput | null>(null);
+  const [aiResponse, setAiResponse] = useState<AiResponse | null>(null);
   const { toast } = useToast();
 
   const form = useForm<ConsultationFormValues>({
@@ -37,21 +45,48 @@ export default function AiConsultPage() {
 
   const onSubmit: SubmitHandler<ConsultationFormValues> = async (data) => {
     setIsLoading(true);
-    setDiagnosisResult(null);
+    setAiResponse(null);
     try {
-      const result = await suggestDiagnosis(data as SuggestDiagnosisInput);
-      setDiagnosisResult(result);
+      // 1. Get diagnosis suggestions
+      const diagnosisResult = await suggestDiagnosis(data as SuggestDiagnosisInput);
+      
+      // 2. Set initial state to show text results immediately
+      setAiResponse({
+        diagnoses: diagnosisResult,
+        isGeneratingAudio: true,
+      });
+
       toast({
         title: 'Diagnosis Suggested',
-        description: 'Zizo_MediAI has provided potential diagnoses.',
+        description: 'Zizo_MediAI has provided potential diagnoses. Generating audio summary...',
       });
+
+      // 3. Format a concise text summary for the audio generation
+      let textForAudio = "Based on your symptoms, here are some potential diagnoses. ";
+      if (diagnosisResult && diagnosisResult.length > 0) {
+        diagnosisResult.forEach(diag => {
+          textForAudio += `A possible diagnosis is ${diag.diagnosis}. Rationale: ${diag.rationale}. `;
+        });
+        textForAudio += "Please remember, this is not a substitute for professional medical advice.";
+      } else {
+        textForAudio = "I was unable to determine a specific diagnosis based on the limited information. Please consult a healthcare professional.";
+      }
+      
+      // 4. Generate audio in the background
+      const audioResult = await generateAudio(textForAudio);
+
+      // 5. Update the state with the generated audio URL
+      setAiResponse(prev => prev ? { ...prev, audioUrl: audioResult.media, isGeneratingAudio: false } : null);
+
     } catch (error) {
-      console.error("Error suggesting diagnosis:", error);
+      console.error("AI processing failed:", error);
       toast({
         title: 'Error',
-        description: 'Failed to get diagnosis suggestions. Please try again.',
+        description: 'Failed to get AI suggestions. Please try again.',
         variant: 'destructive',
       });
+      // Clear out partial results on error
+      setAiResponse(null);
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +164,7 @@ export default function AiConsultPage() {
         </Card>
 
         <div className="lg:col-span-2 space-y-6">
-          {isLoading && (
+          {isLoading && !aiResponse && ( // Show this only during the initial loading phase
             <Card className="shadow-xl rounded-xl">
               <CardHeader>
                 <CardTitle className="font-headline text-xl text-primary flex items-center gap-2">
@@ -146,19 +181,33 @@ export default function AiConsultPage() {
             </Card>
           )}
 
-          {diagnosisResult && !isLoading && (
+          {aiResponse && ( // Show the result card as soon as we have diagnoses
             <Card className="shadow-xl rounded-xl">
               <CardHeader className="bg-accent/10">
                 <CardTitle className="font-headline text-2xl text-accent flex items-center gap-2">
                   <Lightbulb className="h-6 w-6" />
                   AI Diagnosis Suggestions
                 </CardTitle>
-                <CardDescription>Based on the information provided, here are some potential considerations. Remember to consult a healthcare professional.</CardDescription>
+                <CardDescription>Based on the information provided, here are some potential considerations. You can also listen to the summary.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                {diagnosisResult.length > 0 ? (
+                {aiResponse.isGeneratingAudio && (
+                  <div className="flex items-center justify-center p-3 mb-4 text-sm text-muted-foreground bg-secondary/30 rounded-md">
+                    <Activity className="mr-2 h-4 w-4 animate-spin"/> Generating audio summary...
+                  </div>
+                )}
+                {aiResponse.audioUrl && (
+                  <div className="mb-4">
+                    <audio controls className="w-full">
+                      <source src={aiResponse.audioUrl} type="audio/wav" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
+
+                {aiResponse.diagnoses.length > 0 ? (
                   <Accordion type="single" collapsible className="w-full">
-                    {diagnosisResult.map((diag, index) => (
+                    {aiResponse.diagnoses.map((diag, index) => (
                       <AccordionItem value={`item-${index}`} key={index} className="border-b border-border last:border-b-0">
                         <AccordionTrigger className="hover:no-underline text-left">
                           <div className="flex items-center justify-between w-full">
@@ -183,14 +232,14 @@ export default function AiConsultPage() {
                 )}
               </CardContent>
               <CardFooter>
-                 <Button variant="outline" className="w-full" onClick={() => { setDiagnosisResult(null); form.reset(); }}>
+                 <Button variant="outline" className="w-full" onClick={() => { setAiResponse(null); form.reset(); }}>
                     Start New Consultation
                   </Button>
               </CardFooter>
             </Card>
           )}
           
-          {!diagnosisResult && !isLoading && (
+          {!aiResponse && !isLoading && (
              <Card className="shadow-xl rounded-xl">
               <CardHeader>
                 <CardTitle className="font-headline text-xl text-primary flex items-center gap-2">
@@ -215,4 +264,3 @@ function getConfidenceColor(confidence: number): string {
   if (confidence > 0.5) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300";
   return "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300";
 }
-
