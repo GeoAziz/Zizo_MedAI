@@ -1,16 +1,27 @@
 
+"use client";
+
+import { useState, useEffect } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LayoutDashboard, Users, MessageSquare, FileEdit, ClipboardPlus, Bot, AlertTriangle, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Users, Bot, AlertTriangle, CalendarClock, FileEdit, ClipboardPlus } from "lucide-react";
 import Link from "next/link";
 import { getPatients } from "@/services/users";
 import type { PatientRecord } from "@/services/users";
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+
+interface PatientWithDetails extends PatientRecord {
+  status: string;
+  lastVisit: string;
+  alerts: number;
+}
 
 // Augment fetched patient data with mock details for the UI
-function addMockDetailsToPatients(patients: PatientRecord[]) {
+function addMockDetailsToPatients(patients: PatientRecord[]): PatientWithDetails[] {
   const statuses = ["Stable", "Critical", "Improving", "Stable"];
   return patients.map((patient, index) => ({
     ...patient,
@@ -20,10 +31,32 @@ function addMockDetailsToPatients(patients: PatientRecord[]) {
   }));
 }
 
+export default function DoctorDashboardPage() {
+  const [patientsWithDetails, setPatientsWithDetails] = useState<PatientWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-export default async function DoctorDashboardPage() {
-  const realPatients = await getPatients();
-  const patientsWithDetails = addMockDetailsToPatients(realPatients);
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const realPatients = await getPatients();
+        const augmentedPatients = addMockDetailsToPatients(realPatients);
+        setPatientsWithDetails(augmentedPatients);
+      } catch (error) {
+        console.error("Failed to fetch patients for dashboard:", error);
+        toast({
+          title: "Could Not Load Patients",
+          description: "There was an error fetching the patient list. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, [toast]);
+
 
   return (
     <div className="space-y-6">
@@ -37,7 +70,7 @@ export default async function DoctorDashboardPage() {
           <CardContent className="space-y-2">
             <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
               <p className="text-foreground">Total Patients:</p>
-              <p className="font-bold text-lg text-primary">{realPatients.length}</p>
+              {isLoading ? <Skeleton className="h-6 w-8" /> : <p className="font-bold text-lg text-primary">{patientsWithDetails.length}</p>}
             </div>
             <div className="flex justify-between items-center p-3 bg-secondary/30 rounded-md">
               <p className="text-foreground">Critical Alerts:</p>
@@ -90,41 +123,66 @@ export default async function DoctorDashboardPage() {
           <CardDescription>Quick access to your real patient records from the database.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Patient Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Visit</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {patientsWithDetails.map((patient) => (
-                <TableRow key={patient.uid}>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
-                  <TableCell>{patient.email}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      patient.status === "Critical" ? "bg-red-500/20 text-red-700" :
-                      patient.status === "Improving" ? "bg-yellow-500/20 text-yellow-700" :
-                      "bg-green-500/20 text-green-700"
-                    }`}>
-                      {patient.status}
-                      {patient.alerts > 0 && <AlertTriangle className="inline-block ml-1 h-3 w-3 text-red-500" />}
-                    </span>
-                  </TableCell>
-                  <TableCell>{patient.lastVisit}</TableCell>
-                  <TableCell className="text-right">
-                    <Button asChild variant="ghost" size="sm">
-                       <Link href={`/doctor/prescribe?patientId=${patient.uid}`}>Prescribe</Link>
-                    </Button>
-                  </TableCell>
+          {isLoading ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Visit</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {[...Array(3)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-7 w-20 ml-auto" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Visit</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {patientsWithDetails.map((patient) => (
+                  <TableRow key={patient.uid}>
+                    <TableCell className="font-medium">{patient.name}</TableCell>
+                    <TableCell>{patient.email}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        patient.status === "Critical" ? "bg-red-500/20 text-red-700" :
+                        patient.status === "Improving" ? "bg-yellow-500/20 text-yellow-700" :
+                        "bg-green-500/20 text-green-700"
+                      }`}>
+                        {patient.status}
+                        {patient.alerts > 0 && <AlertTriangle className="inline-block ml-1 h-3 w-3 text-red-500" />}
+                      </span>
+                    </TableCell>
+                    <TableCell>{patient.lastVisit}</TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="ghost" size="sm">
+                         <Link href={`/doctor/prescribe?patientId=${patient.uid}`}>Prescribe</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
         <CardFooter>
           <Button asChild variant="outline" className="w-full">
