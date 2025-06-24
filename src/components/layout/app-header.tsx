@@ -34,7 +34,7 @@ export function AppHeader() {
         <Logo />
       </div>
       
-      <div className="flex w-full items-center justify-end gap-4">
+      <div className="flex w-full items-center justify-end gap-2 md:gap-4">
         <EmergencySosButton />
         <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
           {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

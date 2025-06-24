@@ -1,4 +1,5 @@
-# Settings to manage and configure a Firebase App Hosting backend.
+# This file is for configuring a Firebase App Hosting backend.
+# If you are deploying to a different platform like Vercel, this file is not needed and can be safely removed.
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
