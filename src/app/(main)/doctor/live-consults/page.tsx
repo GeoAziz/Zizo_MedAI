@@ -13,6 +13,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { suggestDiagnosis, type SuggestDiagnosisInput, type SuggestDiagnosisOutput } from '@/ai/flows/suggest-diagnosis';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -31,9 +33,9 @@ interface Patient {
 }
 
 const mockPatientsData: Patient[] = [
-  { id: "P001", name: "Johnathan P. Doe", age: 38, condition: "Hypertension, Asthma", symptoms: "Persistent cough, mild fever.", medicalHistory: "Asthma diagnosed in childhood, seasonal allergies." },
-  { id: "P002", name: "Jane A. Smith", age: 45, condition: "Diabetes Type 2", symptoms: "Increased thirst, fatigue.", medicalHistory: "Family history of diabetes." },
-  { id: "P003", name: "Alice B. Brown", age: 29, condition: "Migraines", symptoms: "Severe headache, nausea.", medicalHistory: "Occasional migraines, no other chronic conditions." },
+  { id: "P001", name: "Johnathan P. Doe", age: 38, condition: "Hypertension, Asthma", symptoms: "Persistent cough, mild fever, and fatigue for the last 3 days.", medicalHistory: "Asthma diagnosed in childhood, seasonal allergies. Allergic to penicillin." },
+  { id: "P002", name: "Jane A. Smith", age: 45, condition: "Diabetes Type 2", symptoms: "Increased thirst, frequent urination, and unexplained weight loss.", medicalHistory: "Family history of diabetes. Takes Metformin 500mg daily." },
+  { id: "P003", name: "Alice B. Brown", age: 29, condition: "Migraines", symptoms: "Severe throbbing headache on one side of the head, nausea, and sensitivity to light.", medicalHistory: "Occasional migraines, no other chronic conditions." },
 ];
 
 
@@ -43,6 +45,9 @@ export default function DoctorLiveConsultsPage() {
   const [newMessage, setNewMessage] = useState("");
   const [currentTime, setCurrentTime] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const { toast } = useToast();
+
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId');
@@ -57,8 +62,9 @@ export default function DoctorLiveConsultsPage() {
 
   useEffect(() => {
     // Ensure this runs only on the client
-    setCurrentTime(new Date().toLocaleTimeString());
-    const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
+    const updateClientTime = () => setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    updateClientTime();
+    const timer = setInterval(updateClientTime, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -70,12 +76,12 @@ export default function DoctorLiveConsultsPage() {
 
   const handleStartConsult = () => {
     if (!patientDetails) {
-        alert("Please select a patient to start the consultation.");
+        toast({ title: "No Patient Selected", description: "Please select a patient to start the consultation.", variant: "destructive" });
         return;
     }
     setIsConsultActive(true);
     setMessages([
-      { id: '1', sender: 'ai', text: `Zizo_MediAI: Hello Dr. Welcome. Patient ${patientDetails.name} (${patientDetails.id}) is ready for consultation. Reported Symptoms: ${patientDetails.symptoms}. Medical history: ${patientDetails.medicalHistory}`, timestamp: new Date().toLocaleTimeString() }
+      { id: '1', sender: 'ai', text: `Zizo_MediAI: Hello Dr. Welcome. Patient ${patientDetails.name} (${patientDetails.id}) is ready for consultation. Reported Symptoms: ${patientDetails.symptoms}. Medical history: ${patientDetails.medicalHistory}`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
     ]);
   };
   
@@ -91,27 +97,78 @@ export default function DoctorLiveConsultsPage() {
       id: (messages.length + 1).toString(),
       sender: 'doctor',
       text: newMessage,
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setMessages(prev => [...prev, newMsg]);
     setNewMessage("");
 
-    // Mock AI response
+    // Mock AI response for simple chat
     setTimeout(() => {
       const aiResponses = [
-        "Zizo_MediAI: Processing... Considering differential diagnoses based on symptoms. Would you like me to suggest potential diagnoses or relevant tests?",
-        "Zizo_MediAI: Understood. I've logged that note. Are there any specific vital signs you'd like to check for " + patientDetails.name + "?",
-        "Zizo_MediAI: Based on the current information, common considerations include X, Y, or Z. Would you like more details on any of these?",
-        "Zizo_MediAI: I can help draft a prescription for " + patientDetails.name + " if needed. What medication are you considering?",
+        "Zizo_MediAI: Understood. I've logged that note. Are there any other observations?",
+        "Zizo_MediAI: Noted. Is there anything else I can assist with?",
+        "Zizo_MediAI: Acknowledged. I'm ready for your next command.",
       ];
       const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
       setMessages(prev => [...prev, {
         id: (prev.length + 1).toString(),
         sender: 'ai',
         text: randomResponse,
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
-    }, 1500);
+    }, 1000);
+  };
+  
+  const handleSuggestDiagnosis = async () => {
+    if (!patientDetails) return;
+
+    setIsDiagnosing(true);
+    setMessages(prev => [...prev, {
+        id: (prev.length + 1).toString(),
+        sender: 'ai',
+        text: "Zizo_MediAI: Analyzing patient data to suggest potential diagnoses. Please wait...",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }]);
+
+    try {
+        const input: SuggestDiagnosisInput = {
+            symptoms: patientDetails.symptoms,
+            medicalHistory: patientDetails.medicalHistory,
+        };
+        const result = await suggestDiagnosis(input);
+        
+        let diagnosisText = "Zizo_MediAI: Based on the provided information, here are some potential diagnoses:\n";
+        if (result && result.length > 0) {
+            result.forEach(diag => {
+                diagnosisText += `\n• ${diag.diagnosis} (Confidence: ${(diag.confidence * 100).toFixed(0)}%): ${diag.rationale}`;
+            });
+        } else {
+            diagnosisText = "Zizo_MediAI: I was unable to determine a specific diagnosis based on the limited information. Further testing or more detailed symptoms may be required.";
+        }
+
+        setMessages(prev => [...prev, {
+            id: (prev.length + 1).toString(),
+            sender: 'ai',
+            text: diagnosisText,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+
+    } catch (error) {
+        console.error("Error suggesting diagnosis:", error);
+        toast({
+            title: "AI Diagnosis Failed",
+            description: "There was an error communicating with the AI service. Please try again.",
+            variant: "destructive"
+        });
+         setMessages(prev => [...prev, {
+            id: (prev.length + 1).toString(),
+            sender: 'ai',
+            text: "Zizo_MediAI: An error occurred while generating diagnoses. Please check the system logs.",
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
+    } finally {
+        setIsDiagnosing(false);
+    }
   };
 
   if (!isConsultActive) {
@@ -146,8 +203,7 @@ export default function DoctorLiveConsultsPage() {
   }
 
   if (!patientDetails) {
-    // This case should ideally not be reached if isConsultActive is true
-    // but as a fallback:
+    // This case should ideally not be reached if isConsultActive is true but as a fallback:
     return (
         <div className="flex flex-col items-center justify-center h-full text-center">
             <AlertTriangle className="w-12 h-12 text-destructive mb-4"/>
@@ -206,7 +262,7 @@ export default function DoctorLiveConsultsPage() {
                 <div key={msg.id} className={`flex ${msg.sender === 'doctor' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] p-3 rounded-lg shadow ${
                     msg.sender === 'doctor' ? 'bg-primary text-primary-foreground' :
-                    msg.sender === 'patient' ? 'bg-muted text-muted-foreground' : 'bg-accent text-accent-foreground' // patient messages can be styled distinctly if they were to send any
+                    msg.sender === 'patient' ? 'bg-muted text-muted-foreground' : 'bg-accent text-accent-foreground whitespace-pre-wrap'
                   }`}>
                     <p className="text-sm">{msg.text}</p>
                     <p className={`text-xs mt-1 ${
@@ -219,10 +275,13 @@ export default function DoctorLiveConsultsPage() {
               </div>
             </ScrollArea>
             <div className="border-t p-3 space-y-2 flex-shrink-0">
-                 <p className="text-xs text-muted-foreground text-center mb-1">AI Quick Actions (Conceptual):</p>
+                 <p className="text-xs text-muted-foreground text-center mb-1">AI Quick Actions:</p>
                  <div className="grid grid-cols-2 gap-2">
                     <Button variant="outline" size="sm" disabled><Activity className="mr-1 h-4 w-4"/> Check Vitals</Button>
-                    <Button variant="outline" size="sm" disabled><Sparkles className="mr-1 h-4 w-4"/> Suggest Dx</Button>
+                    <Button variant="outline" size="sm" onClick={handleSuggestDiagnosis} disabled={isDiagnosing}>
+                        {isDiagnosing ? <Activity className="mr-1 h-4 w-4 animate-spin"/> : <Sparkles className="mr-1 h-4 w-4"/>}
+                        Suggest Dx
+                    </Button>
                     <Button variant="outline" size="sm" disabled>Order Test</Button>
                     <Button variant="outline" size="sm" disabled>Summarize</Button>
                 </div>
@@ -246,3 +305,5 @@ export default function DoctorLiveConsultsPage() {
     </div>
   );
 }
+
+    
