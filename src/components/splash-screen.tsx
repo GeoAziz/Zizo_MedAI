@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Brain } from 'lucide-react';
 
 interface SplashScreenProps {
   onFinished: () => void;
@@ -40,19 +41,12 @@ export function SplashScreen({ onFinished }: SplashScreenProps) {
         
         <div className="ai-core-orb">
           <div className="orb-center">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-1/2 h-1/2 text-cyan-400">
-                <path d="M12 2C12 2 4 6 4 12C4 18 12 22 12 22C12 22 20 18 20 12C20 6 12 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 2V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 21V22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M22 12H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 12H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+             <Brain className="w-1/2 h-1/2 text-cyan-400 animate-pulse"/>
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold mt-8 mb-2 splash-logo" style={{ animationDelay: '0.5s', opacity: 0, animation: 'fade-in-text 1s forwards 0.5s' }}>
-          Zizo_MediAI
+        <h1 className="text-4xl md:text-6xl font-bold mt-8 mb-2 splash-logo font-headline flex items-center gap-1" style={{ animationDelay: '0.5s', opacity: 0, animation: 'fade-in-text 1s forwards 0.5s' }}>
+          MEDI<Brain className="w-10 h-10 md:w-14 md:h-14 -mb-2 text-cyan-300"/>AI
         </h1>
         <p className="text-sm md:text-base tracking-widest text-cyan-300/80 splash-tagline">
           <span style={{ animationDelay: '1.0s' }}>Precision</span>
