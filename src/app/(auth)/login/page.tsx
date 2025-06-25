@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -41,9 +42,16 @@ export default function LoginPage() {
       toast({ title: "Login Successful!", description: "Welcome back to Zizo_MediAI." });
     } catch (error: any) {
       console.error("Login failed:", error);
+      let description = "An unknown error occurred. Please try again.";
+      // Provide a more helpful message for the most common login error.
+      if (error.code === 'auth/invalid-credential') {
+        description = "Incorrect email or password. Please check your credentials or register for a new account if you don't have one.";
+      } else {
+        description = error.message || description;
+      }
       toast({
         title: "Login Failed",
-        description: error.message || "An unknown error occurred. Please try again.",
+        description: description,
         variant: "destructive",
       });
     } finally {
