@@ -4,7 +4,7 @@
 import type { LucideIcon } from 'lucide-react';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -49,27 +49,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
+        
+        let userRole: UserRole = null;
+        let userName: string = firebaseUser.displayName || 'Anonymous';
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          const userRole = userData.role as UserRole;
-          
-          const fullUser: AuthUser = {
-              ...firebaseUser,
-              name: userData.name || firebaseUser.displayName || 'Anonymous'
-          };
-          setUser(fullUser);
-          setRole(userRole);
-
-          if (pathname === '/login' || pathname === '/register' || pathname === '/') {
-            router.push(`/${userRole}/dashboard`);
-          }
+          userRole = userData.role as UserRole;
+          userName = userData.name || userName;
         } else {
-          // This case handles users who signed up (e.g., via Google) but whose doc creation might be pending
-          // or if there's an inconsistency. We log them out to force a clean login flow.
-          setRole(null);
-          toast({ title: "User data not found", description: "Your user profile is not complete. Please sign in again to create it.", variant: "destructive" });
-          await signOut(auth);
+          // User is authenticated but doesn't have a doc in Firestore.
+          // This is a new sign-up, likely via Google redirect. Create their doc.
+          userRole = 'patient'; // Default new sign-ups to patient
+          await setDoc(userDocRef, {
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            role: userRole,
+            createdAt: serverTimestamp(),
+          });
+          userName = firebaseUser.displayName || userName;
+          toast({ title: "Welcome!", description: "Your new patient account has been created." });
         }
+        
+        const fullUser: AuthUser = {
+            ...firebaseUser,
+            name: userName
+        };
+        setUser(fullUser);
+        setRole(userRole);
+
+        if (pathname === '/login' || pathname === '/register' || pathname === '/') {
+          router.push(`/${userRole}/dashboard`);
+        }
+
       } else {
         setUser(null);
         setRole(null);
@@ -101,23 +114,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const firebaseUser = result.user;
-    const userDocRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    // If the user doesn't exist in Firestore, create a new document for them.
-    // Default new Google sign-ups to the 'patient' role.
-    if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-            uid: firebaseUser.uid,
-            name: firebaseUser.displayName,
-            email: firebaseUser.email,
-            role: 'patient',
-            createdAt: serverTimestamp(),
-        });
-    }
-    // onAuthStateChanged will handle the rest (setting state, redirecting).
+    // Using signInWithRedirect is better for environments like embedded IDEs
+    // where popups can be blocked or have origin issues.
+    await signInWithRedirect(auth, provider);
+    // The onAuthStateChanged listener will handle the result of the redirect.
   };
 
 
