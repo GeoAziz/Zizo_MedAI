@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 
 export default function PatientDashboardLoading() {
   return (
-    <div className="space-y-6 animate-pulse">
-      <PageHeader title="Patient Dashboard" description="Your personal health overview and quick actions." icon={LayoutDashboard} />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-lg rounded-xl">
           <CardHeader>
