@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -14,12 +15,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, Clock, Hospital, UserCheck, CheckCircle, AlertTriangle } from "lucide-react";
+import { CalendarIcon, Clock, Hospital, UserCheck, CheckCircle, AlertTriangle, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/context/auth-context';
+import { createBookingAction } from '@/actions/bookingActions';
+import { useSearchParams } from 'next/navigation';
 
 const bookingSchema = z.object({
-  facility: z.string().min(1, "Please select a facility."),
+  facilityId: z.string().min(1, "Please select a facility."),
   service: z.string().min(1, "Please select a service."),
   date: z.date({ required_error: "Please select a date." }),
   time: z.string().min(1, "Please select a time slot."),
@@ -43,36 +47,57 @@ const services = [
 
 
 export default function FacilityBookingPage() {
-  const [isBooking, setIsBooking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const facilityIdFromQuery = searchParams.get('facilityId');
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      facilityId: facilityIdFromQuery || "",
+      service: "",
+      time: "",
+      reason: "",
+    }
   });
 
   const onSubmit: SubmitHandler<BookingFormValues> = async (data) => {
-    setIsBooking(true);
-    setBookingConfirmed(false);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Booking Data:", data);
-    toast({
-      title: "Booking Request Submitted!",
-      description: `Your appointment for ${data.service} at ${data.facility} on ${format(data.date, "PPP")} at ${data.time} is being processed.`,
-    });
-    setBookingConfirmed(true);
-    setIsBooking(false);
-    form.reset();
+    if (!user) {
+        toast({ title: "Authentication Error", description: "You must be logged in to book an appointment.", variant: "destructive" });
+        return;
+    }
+
+    setIsSubmitting(true);
+    const result = await createBookingAction(data, user.uid);
+    setIsSubmitting(false);
+
+    if (result.success) {
+        toast({
+          title: "Booking Request Submitted!",
+          description: `Your appointment request has been sent and is pending confirmation.`,
+          variant: 'default',
+        });
+        setBookingConfirmed(true);
+        form.reset();
+    } else {
+        toast({
+            title: "Submission Failed",
+            description: result.error || "An unknown error occurred.",
+            variant: "destructive",
+        });
+    }
   };
 
   if (bookingConfirmed) {
     return (
       <div className="space-y-6 flex flex-col items-center justify-center text-center min-h-[calc(100vh-200px)]">
          <CheckCircle className="w-24 h-24 text-green-500 mb-4" />
-        <PageHeader title="Booking Confirmed!" description="Your appointment has been successfully scheduled." />
+        <PageHeader title="Booking Submitted!" description="Your appointment request has been successfully recorded." />
         <p className="text-muted-foreground max-w-md">
-            You will receive a confirmation email shortly with all the details. 
+            You will receive a notification once your appointment is confirmed. 
             You can manage your appointments from your dashboard.
         </p>
         <Button onClick={() => setBookingConfirmed(false)} className="mt-6">
@@ -90,23 +115,23 @@ export default function FacilityBookingPage() {
       <Card className="max-w-2xl mx-auto shadow-xl rounded-xl">
         <CardHeader className="bg-primary/5">
           <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2"><UserCheck className="w-6 h-6"/>Smart Scheduler</CardTitle>
-          <CardDescription>Fill in the details below. AI will suggest optimal slots if your preferred one is unavailable (feature coming soon).</CardDescription>
+          <CardDescription>Fill in the details below. This form writes directly to your patient record in Firestore.</CardDescription>
         </CardHeader>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="facility"
+                name="facilityId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-semibold">Facility</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-input focus:ring-primary"><Hospital className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select a facility" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {facilities.map(f => <SelectItem key={f.id} value={f.name}>{f.name}</SelectItem>)}
+                        {facilities.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -122,7 +147,7 @@ export default function FacilityBookingPage() {
                     <FormLabel className="font-semibold">Service</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-input focus:ring-primary"><UserCheck className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select a service" /></SelectTrigger>
+                        <SelectTrigger className="bg-input focus:ring-primary"><UserCheck className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select a service" /></SelectValue>
                       </FormControl>
                       <SelectContent>
                         {services.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
@@ -216,8 +241,8 @@ export default function FacilityBookingPage() {
                 <p>AI-powered slot suggestions are coming soon to help you find the best appointment times!</p>
               </div>
 
-              <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isBooking}>
-                {isBooking ? "Processing..." : "Request Booking"}
+              <Button type="submit" className="w-full text-lg py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg shadow-md" disabled={isSubmitting}>
+                {isSubmitting ? <><Activity className="mr-2 h-4 w-4 animate-spin"/>Submitting Request...</> : "Request Booking"}
               </Button>
             </form>
           </Form>
