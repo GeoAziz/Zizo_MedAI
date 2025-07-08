@@ -258,4 +258,26 @@ export default function DoctorSurgerySchedulePage() {
                     </div>
                      <div className="space-y-1.5">
                         <Label htmlFor="edit-aiAssist">AI Assisted</Label>
-                         <Select name="aiAssist" value={editFormData?.aiAssist ? "true" : "false"} onValuecha...
+                         <Select name="aiAssist" value={editFormData?.aiAssist ? "true" : "false"} onValueChange={(value) => handleEditFormSelectChange('aiAssist', value === "true")}>
+                            <SelectTrigger className="w-full bg-input"><SelectValue placeholder="AI Assistance" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="true">Yes</SelectItem>
+                                <SelectItem value="false">No</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="edit-notes">Notes</Label>
+                        <Textarea id="edit-notes" name="notes" value={editFormData?.notes || ''} onChange={handleEditFormChange} className="bg-input" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
+                    <Button type="button" onClick={handleSaveChanges}>Save Changes</Button>
+                </DialogFooter>
+            </DialogContent>
+         </Dialog>
+      )}
+    </div>
+  );
+}

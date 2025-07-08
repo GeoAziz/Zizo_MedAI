@@ -1,51 +1,63 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper functions
-    function isUserAuthenticated() {
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    function isUserRole(role) {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
-    }
-
-    function isOwner(userId) {
+    function isUser(userId) {
       return request.auth.uid == userId;
     }
+
+    function getRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    function isAdmin() {
+      return getRole(request.auth.uid) == 'admin';
+    }
     
-    // === USERS COLLECTION ===
+    function isDoctor() {
+       return getRole(request.auth.uid) == 'doctor';
+    }
+
+    // USERS collection
     match /users/{userId} {
-      // ANY authenticated user can create their own user document (for signup).
-      // An ADMIN can create any user document.
-      allow create: if isUserAuthenticated() || isUserRole('admin');
-      
-      // A user can read THEIR OWN document.
-      // An ADMIN can read ANY user document.
-      // A DOCTOR can read ANY user document (to find patients).
-      allow read: if isOwner(userId) || isUserRole('admin') || isUserRole('doctor');
-      
-      // A user can update THEIR OWN document (e.g., their name).
-      // An ADMIN can update ANY user document.
-      allow update: if isOwner(userId) || isUserRole('admin');
-      
-      // Only an ADMIN can delete a user document.
-      allow delete: if isUserRole('admin');
-      
-      // --- SUBCOLLECTIONS ---
-      
-      // Appointments: Patients can manage their own, Doctors/Admins can manage any.
+      // READ:
+      // - Any signed-in user can read their own profile.
+      // - An admin can read any user's profile.
+      // - A doctor can read any user's profile (for patient lists).
+      allow read: if isSignedIn() && (isUser(userId) || isAdmin() || isDoctor());
+
+      // CREATE:
+      // - A new user can create their own document (e.g., Google Sign-In).
+      // - An admin can create any user document.
+      allow create: if (isSignedIn() && isUser(userId)) || isAdmin();
+
+      // UPDATE:
+      // - A user can update their own profile (e.g., change name).
+      // - An admin can update any user's role/details.
+      allow update: if (isSignedIn() && isUser(userId)) || isAdmin();
+
+      // DELETE:
+      // - Only an admin can delete a user document.
+      allow delete: if isAdmin();
+
+      // Sub-collections for Patients
       match /appointments/{appointmentId} {
-        allow read, write: if isOwner(userId) || isUserRole('doctor') || isUserRole('admin');
+        // Patients can create their own appointments.
+        // Doctors/Admins can manage appointments.
+        allow read, write: if isSignedIn() && (isUser(userId) || isDoctor() || isAdmin());
       }
-      
-      // Prescriptions: Only Doctors/Admins can create/manage. Patients can read their own.
+
       match /prescriptions/{prescriptionId} {
-        allow create, update, delete: if isUserRole('doctor') || isUserRole('admin');
-        allow read: if isOwner(userId) || isUserRole('doctor') || isUserRole('admin');
+        // Patients can only read their prescriptions.
+        allow read: if isSignedIn() && isUser(userId);
+        // Only doctors and admins can create/update prescriptions.
+        allow write: if isDoctor() || isAdmin();
       }
     }
   }
