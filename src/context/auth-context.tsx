@@ -4,8 +4,8 @@
 import type { LucideIcon } from 'lucide-react';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,7 +20,7 @@ export interface NavItem {
 }
 
 interface AuthUser extends User {
-    name?: string; // Add name to the user object type
+    name?: string;
 }
 
 interface AuthContextType {
@@ -28,6 +28,7 @@ interface AuthContextType {
   role: UserRole;
   login: (data: any) => Promise<void>;
   signUp: (data: any) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -46,7 +47,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setIsLoading(true);
       if (firebaseUser) {
-        // Fetch user role and name from Firestore
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
@@ -55,18 +55,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           const fullUser: AuthUser = {
               ...firebaseUser,
-              name: userData.name || 'Anonymous'
+              name: userData.name || firebaseUser.displayName || 'Anonymous'
           };
           setUser(fullUser);
           setRole(userRole);
 
-          if (pathname === '/login' || pathname === '/register') {
+          if (pathname === '/login' || pathname === '/register' || pathname === '/') {
             router.push(`/${userRole}/dashboard`);
           }
         } else {
-          // Handle case where user exists in Auth but not Firestore
+          // This case handles users who signed up (e.g., via Google) but whose doc creation might be pending
+          // or if there's an inconsistency. We log them out to force a clean login flow.
           setRole(null);
-          toast({ title: "User data not found", description: "Please contact support.", variant: "destructive" });
+          toast({ title: "User data not found", description: "Your user profile is not complete. Please sign in again to create it.", variant: "destructive" });
           await signOut(auth);
         }
       } else {
@@ -84,29 +85,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async ({ email, password }: any) => {
     await signInWithEmailAndPassword(auth, email, password);
-    // onAuthStateChanged will handle the redirect
   };
 
   const signUp = async ({ name, email, password, role: selectedRole }: any) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
-    // Create user profile in Firestore
     await setDoc(doc(db, 'users', firebaseUser.uid), {
       uid: firebaseUser.uid,
       name: name,
       email: firebaseUser.email,
       role: selectedRole,
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
     });
-    // onAuthStateChanged will handle setting state and redirecting
   };
+
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    // If the user doesn't exist in Firestore, create a new document for them.
+    // Default new Google sign-ups to the 'patient' role.
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+            uid: firebaseUser.uid,
+            name: firebaseUser.displayName,
+            email: firebaseUser.email,
+            role: 'patient',
+            createdAt: serverTimestamp(),
+        });
+    }
+    // onAuthStateChanged will handle the rest (setting state, redirecting).
+  };
+
 
   const logout = async () => {
     await signOut(auth);
     router.push('/login');
   };
   
-  const value = { user, role, isLoading, login, signUp, logout };
+  const value = { user, role, isLoading, login, signUp, loginWithGoogle, logout };
 
   return (
     <AuthContext.Provider value={value}>

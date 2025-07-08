@@ -6,20 +6,7 @@ This script populates your Firestore database with a rich set of mock data, incl
 
 ## Before You Run
 
-To allow the script to securely connect to your Firebase project, you need to provide it with a **service account key**.
-
-### Step 1: Generate a Service Account Key
-
-1.  Open your [Firebase Project Console](https://console.firebase.google.com/).
-2.  Click the gear icon next to "Project Overview" in the sidebar and select **Project settings**.
-3.  Go to the **Service accounts** tab.
-4.  Click the **Generate new private key** button. A confirmation dialog will appear.
-5.  Click **Generate key**. A JSON file will be downloaded to your computer.
-
-### Step 2: Add the Key to Your Project
-
-1.  Rename the downloaded JSON file to `serviceAccountKey.json`.
-2.  **Move** this file into this `scripts` directory. The final path should be `scripts/serviceAccountKey.json`.
+The script requires a Firebase service account key to securely connect to your project. The `serviceAccountKey.json` file containing this key has been added to this `scripts/` directory for you.
 
 The `.gitignore` file is already configured to prevent this secret key from ever being committed to your repository.
 
