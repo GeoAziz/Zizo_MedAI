@@ -71,8 +71,8 @@ export default function DoctorSurgerySchedulePage() {
   const [editFormData, setEditFormData] = useState<Partial<Surgery>>({});
 
   const filteredSurgeries = selectedDate 
-    ? surgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd"))
-    : surgeries;
+    ? surgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd")).sort((a,b) => a.time.localeCompare(b.time))
+    : surgeries.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.time.localeCompare(b.time));
 
   const openEditModal = (surgery: Surgery) => {
     setSelectedSurgery(surgery);
@@ -80,7 +80,7 @@ export default function DoctorSurgerySchedulePage() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEditFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -94,7 +94,6 @@ export default function DoctorSurgerySchedulePage() {
       setSurgeries(prevSurgeries => 
         prevSurgeries.map(s => s.id === selectedSurgery.id ? { ...s, ...editFormData } as Surgery : s)
       );
-      alert(`Changes for surgery ${selectedSurgery.id} would be saved. (Mock action)`);
       setIsEditModalOpen(false);
       setSelectedSurgery(null);
     }
@@ -135,11 +134,11 @@ export default function DoctorSurgerySchedulePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Case ID</TableHead>
+                  <TableHead>Time</TableHead>
                   <TableHead>Patient</TableHead>
                   <TableHead>Procedure</TableHead>
                   <TableHead>Surgeon</TableHead>
                   <TableHead>OR</TableHead>
-                  <TableHead>Time</TableHead>
                   <TableHead>AI Assist</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -149,11 +148,11 @@ export default function DoctorSurgerySchedulePage() {
                 {filteredSurgeries.map((surgery) => (
                   <TableRow key={surgery.id}>
                     <TableCell className="font-medium">{surgery.id}</TableCell>
+                    <TableCell>{surgery.time}</TableCell>
                     <TableCell>{surgery.patientName} ({surgery.patientId})</TableCell>
                     <TableCell>{surgery.procedure}</TableCell>
                     <TableCell>{surgery.surgeon}</TableCell>
                     <TableCell>{surgery.or}</TableCell>
-                    <TableCell>{surgery.time}</TableCell>
                     <TableCell className="text-center">
                       {surgery.aiAssist ? <Bot className="h-5 w-5 text-primary inline-block" title="AI-Assisted"/> : <Stethoscope className="h-5 w-5 text-muted-foreground inline-block" title="Conventional"/>}
                     </TableCell>
@@ -208,7 +207,7 @@ export default function DoctorSurgerySchedulePage() {
           <CardHeader>
             <CardTitle className="font-headline text-xl flex items-center gap-2"><Bot className="w-5 h-5" />AI Pre-Op Planner (Conceptual)</CardTitle>
             <CardDescription className="text-primary-foreground/80">AI algorithms analyze patient data to suggest optimal surgical plans, identify risks, and simulate outcomes.</CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent>
              <p className="text-sm mb-4">This tool is under development and aims to enhance surgical precision and patient safety.</p>
           </CardContent>
@@ -241,7 +240,7 @@ export default function DoctorSurgerySchedulePage() {
                         </div>
                         <div className="space-y-1.5">
                             <Label htmlFor="edit-time">Time</Label>
-                            <Input id="edit-time" name="time" type="time" value={editFormData?.time ? editFormData.time.replace(" AM", "").replace(" PM", "") : ''} onChange={handleEditFormChange} className="bg-input" />
+                            <Input id="edit-time" name="time" type="time" value={editFormData?.time ? format(new Date(`1970-01-01T${editFormData.time.replace(/( AM| PM)/, '')}`), 'HH:mm') : ''} onChange={handleEditFormChange} className="bg-input" />
                         </div>
                     </div>
                     <div className="space-y-1.5">
@@ -259,27 +258,4 @@ export default function DoctorSurgerySchedulePage() {
                     </div>
                      <div className="space-y-1.5">
                         <Label htmlFor="edit-aiAssist">AI Assisted</Label>
-                         <Select name="aiAssist" value={editFormData?.aiAssist ? "true" : "false"} onValueChange={(value) => handleEditFormSelectChange('aiAssist', value === "true")}>
-                            <SelectTrigger className="w-full bg-input"><SelectValue placeholder="AI Assistance" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="true">Yes</SelectItem>
-                                <SelectItem value="false">No</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="edit-notes">Notes</Label>
-                        <Textarea id="edit-notes" name="notes" value={editFormData?.notes || ''} onChange={handleEditFormChange} className="bg-input min-h-[80px]" />
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-                    <Button type="submit" onClick={handleSaveChanges}>Save Changes</Button>
-                </DialogFooter>
-            </DialogContent>
-         </Dialog>
-      )}
-
-    </div>
-  );
-}
+                         <Select name="aiAssist" value={editFormData?.aiAssist ? "true" : "false"} onValuecha...
