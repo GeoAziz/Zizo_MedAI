@@ -40,7 +40,9 @@ export default function AdminDashboardPage() {
             <Image src="https://placehold.co/300x200.png" alt="System Map Placeholder" width={300} height={200} className="rounded-md shadow-md" data-ai-hint="network map" />
           </CardContent>
           <CardFooter>
-             <Button variant="outline" disabled className="w-full">View Full Map</Button>
+             <Button asChild variant="outline" className="w-full">
+                <Link href="/admin/system-map">View Full Map</Link>
+             </Button>
           </CardFooter>
         </Card>
 
@@ -53,7 +55,9 @@ export default function AdminDashboardPage() {
              <p className="text-sm mb-4">Track potential outbreaks and visualize spread patterns with AI-driven insights.</p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" disabled className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">Access Monitor</Button>
+            <Button asChild variant="outline" className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">
+                <Link href="/admin/outbreak-monitor">Access Monitor</Link>
+            </Button>
           </CardFooter>
         </Card>
       </div>
@@ -67,7 +71,9 @@ export default function AdminDashboardPage() {
             <p className="text-muted-foreground">Manage roles, permissions, and view activity logs.</p>
           </CardContent>
            <CardFooter>
-             <Button variant="outline" disabled className="w-full">Manage Users</Button>
+             <Button asChild variant="outline" className="w-full">
+                <Link href="/admin/user-management">Manage Users</Link>
+             </Button>
           </CardFooter>
         </Card>
 
@@ -79,7 +85,9 @@ export default function AdminDashboardPage() {
             <p className="text-muted-foreground">Assign drones, ambulances, and staff to crises.</p>
           </CardContent>
            <CardFooter>
-             <Button variant="outline" disabled className="w-full">Dispatch Resources</Button>
+             <Button asChild variant="outline" className="w-full">
+                <Link href="/admin/resource-dispatch">Dispatch Resources</Link>
+             </Button>
           </CardFooter>
         </Card>
         
@@ -91,7 +99,9 @@ export default function AdminDashboardPage() {
             <p className="text-muted-foreground">Review Zizo_MediAI decision trees and logs.</p>
           </CardContent>
            <CardFooter>
-             <Button variant="outline" disabled className="w-full">View AI Logs</Button>
+             <Button asChild variant="outline" className="w-full">
+                <Link href="/admin/ai-logs">View AI Logs</Link>
+             </Button>
           </CardFooter>
         </Card>
 
