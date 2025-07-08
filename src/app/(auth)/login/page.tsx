@@ -13,6 +13,8 @@ import { Logo } from '@/components/logo';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Stethoscope, LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -36,6 +38,7 @@ export default function LoginPage() {
   const { login, loginWithGoogle, isLoading: authLoading, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -50,7 +53,7 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("Login failed:", error);
       let description = "An unknown error occurred. Please try again.";
-      if (error.code === 'auth/invalid-credential') {
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         description = "Incorrect email or password. Please check your credentials.";
       } else {
         description = error.message || description;
@@ -81,7 +84,7 @@ export default function LoginPage() {
         setIsSubmitting(false);
     }
   };
-
+  
   if (authLoading || (user && !user.role)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -100,7 +103,7 @@ export default function LoginPage() {
             <LogIn className="mr-2 h-7 w-7 text-primary" />
             <CardTitle className="font-headline text-2xl text-primary">Sign In</CardTitle>
           </div>
- <CardDescription className="text-muted-foreground mt-2">
+         <CardDescription className="text-muted-foreground mt-2">
             Access your Zizo_MediAI dashboard by signing in below.
           </CardDescription>
         </CardHeader>
@@ -154,7 +157,7 @@ export default function LoginPage() {
             </Button>
         </CardContent>
         <CardFooter className="flex flex-col items-center p-6 bg-primary/5">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground text-center">
             This is a managed system. Please contact your hospital administrator if you have issues with your account.
           </p>
         </CardFooter>
