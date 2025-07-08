@@ -1,0 +1,85 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Securely get the role of the currently authenticated user.
+    // Returns null if user document doesn't exist or has no role.
+    function getRequestingUserRole() {
+      if (exists(/databases/$(database)/documents/users/$(request.auth.uid))) {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      }
+      return null;
+    }
+
+    function isRole(roleName) {
+      return getRequestingUserRole() == roleName;
+    }
+
+    // --- User Profiles ---
+    match /users/{userId} {
+      // READ:
+      // Admins can read any profile.
+      // Doctors can read patient profiles.
+      // Users can read their own profile.
+      allow read: if isRole('admin') ||
+                     (isRole('doctor') && get(/databases/$(database)/documents/users/$(userId)).data.role == 'patient') ||
+                     isOwner(userId);
+
+      // CREATE:
+      // A user can create their own profile upon signing up.
+      // Their UID must match the document ID.
+      // Their role must be one of the allowed roles, or null for Google Sign-In completion.
+      allow create: if isOwner(userId) && (
+        request.resource.data.uid == userId &&
+        request.resource.data.role in ['patient', 'doctor', 'admin', null]
+      );
+
+      // UPDATE:
+      // Admins can update any profile.
+      // A user can update their own profile, but cannot change their role once set.
+      // A user CAN set their role if it's currently null (completing Google Sign-In).
+      allow update: if isRole('admin') ||
+                       (isOwner(userId) && request.resource.data.role == resource.data.role) ||
+                       (isOwner(userId) && resource.data.role == null);
+
+      // DELETE:
+      // Only admins can delete user profiles to maintain data integrity.
+      allow delete: if isRole('admin');
+
+
+      // --- Subcollections ---
+
+      // APPOINTMENTS: Owned and managed by patients.
+      match /appointments/{appointmentId} {
+        // Patients can read/write their own appointments. Admins have full access.
+        allow read, write: if isOwner(userId) || isRole('admin');
+      }
+
+      // PRESCRIPTIONS: Created by doctors, read by patients/doctors.
+      match /prescriptions/{prescriptionId} {
+        // READ: Patient can read their own, doctors can read any, admins can read any.
+        allow read: if isOwner(userId) || isRole('doctor') || isRole('admin');
+
+        // CREATE: Only a doctor can create a prescription, and they must be the author.
+        allow create: if isRole('doctor') && request.resource.data.doctorId == request.auth.uid;
+
+        // UPDATE: Only the prescribing doctor or an admin can update.
+        allow update: if isRole('admin') || (isRole('doctor') && resource.data.doctorId == request.auth.uid);
+
+        // DELETE: Only admins can delete for archival reasons.
+        allow delete: if isRole('admin');
+      }
+    }
+  }
+}
