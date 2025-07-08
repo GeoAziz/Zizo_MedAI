@@ -1,9 +1,8 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,7 +36,6 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 export default function LoginPage() {
   const { login, loginWithGoogle, isLoading: authLoading, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();  const pathname = usePathname();
   const { toast } = useToast();
 
   const form = useForm<LoginFormValues>({
@@ -54,7 +52,7 @@ export default function LoginPage() {
       console.error("Login failed:", error);
       let description = "An unknown error occurred. Please try again.";
       if (error.code === 'auth/invalid-credential') {
-        description = "Incorrect email or password. Please check your credentials or register for a new account if you don't have one.";
+        description = "Incorrect email or password. Please check your credentials.";
       } else {
         description = error.message || description;
       }
@@ -72,7 +70,8 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await loginWithGoogle();
-      toast({ title: "Login Successful!", description: "Welcome to Zizo_MediAI." });
+      // The auth context will handle redirection. We can show a generic toast.
+      toast({ title: "Authenticating with Google...", description: "Please follow the prompts." });
     } catch (error: any) {
         console.error("Google login failed:", error);
         toast({
@@ -85,16 +84,9 @@ export default function LoginPage() {
     }
   };
 
-  // Redirect new Google sign-ups from the login page to the register page
-  useEffect(() => {
-    if (!authLoading && user && user.role === 'patient' && pathname === '/login') {
-      router.push('/register?fromGoogle=true');
-    }
-  }, [authLoading, user, router, pathname]);
-
-
-
-  if (authLoading || user) {
+  // The AuthProvider now handles redirects, so we just show a loading spinner
+  // if isLoading is true or a user object exists but the role isn't determined yet.
+  if (authLoading || (user && !user.role)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Stethoscope className="h-12 w-12 animate-spin text-primary" />
@@ -152,15 +144,12 @@ export default function LoginPage() {
             </form>
           </Form>
           <div className="relative my-6">
-            <p className="text-center text-sm text-muted-foreground mb-4">
-                Or sign in using your Google account
-            </p>
             <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                
+                Or continue with
                 </span>
             </div>
           </div>

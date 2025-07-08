@@ -59,32 +59,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = userDoc.data();
           userRole = userData.role as UserRole;
           userName = userData.name || userName;
+          
+          const fullUser: AuthUser = { ...firebaseUser, name: userName, role: userRole };
+          setUser(fullUser);
+          setRole(userRole);
+
+          // If user has a role, redirect them away from auth pages
+          if (userRole && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
+            router.push(`/${userRole}/dashboard`);
+          }
+
         } else {
-          // User is authenticated but doesn't have a doc in Firestore.
-          // This is a new sign-up, likely via Google. Create their doc.
-          userRole = 'patient'; // Default new sign-ups to patient
+          // New user (likely from Google Sign-In) - no Firestore doc yet.
+          // Create a preliminary doc but redirect to register page to choose a role.
           await setDoc(userDocRef, {
             uid: firebaseUser.uid,
             name: firebaseUser.displayName,
             email: firebaseUser.email,
-            role: userRole,
+            role: null, // Role is explicitly null until they choose
             createdAt: serverTimestamp(),
           });
-          userName = firebaseUser.displayName || userName;
-          toast({ title: "Welcome!", description: "Your new patient account has been created." });
-        }
-        
-        const fullUser: AuthUser = {
-            ...firebaseUser,
-            name: userName
-        };
-        setUser(fullUser);
-        setRole(userRole);
 
-        if (pathname === '/login' || pathname === '/register' || pathname === '/') {
-          router.push(`/${userRole}/dashboard`);
+          // Set user state but role is null
+          const newUser: AuthUser = { ...firebaseUser, name: firebaseUser.displayName || userName, role: null };
+          setUser(newUser);
+          setRole(null);
+          
+          // Redirect to register page to complete profile
+          router.push('/register?fromGoogle=true');
         }
-
       } else {
         setUser(null);
         setRole(null);
@@ -96,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [pathname, router, toast]);
+  }, [pathname, router]);
 
   const login = async ({ email, password }: any) => {
     await signInWithEmailAndPassword(auth, email, password);
@@ -116,15 +119,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // We're switching back to signInWithPopup. Now that the correct domain is authorized,
-    // this should work better than the redirect flow which is blocked by iframe security policies.
     await signInWithPopup(auth, provider);
-    // The onAuthStateChanged listener will handle the result.
   };
 
-  const updateUserRole = async (uid: string, role: UserRole) => {
+  const updateUserRole = async (uid: string, newRole: UserRole) => {
+    if (!newRole) throw new Error("Role cannot be null.");
     const userDocRef = doc(db, 'users', uid);
-    await updateDoc(userDocRef, { role: role });
+    await updateDoc(userDocRef, { role: newRole });
+    setRole(newRole);
+    if(user) {
+        setUser({ ...user, role: newRole });
+    }
   };
 
   const logout = async () => {

@@ -49,7 +49,8 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", role: "patient" },
   });
-  const isGoogleSignupCompletion = searchParams.get('fromGoogle') === 'true';
+
+  const isGoogleSignupCompletion = searchParams.get('fromGoogle') === 'true' && user;
   const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
 
   const onSubmit: SubmitHandler<RegisterFormValues> = async (data) => {
@@ -57,8 +58,9 @@ export default function RegisterPage() {
     try {
       await signUp(data);
       toast({ title: "Registration Successful!", description: "Your account has been created." });
+      // AuthProvider will handle redirect
     } catch (error: any) {
-      console.error("Registration fjailed:", error);
+      console.error("Registration failed:", error);
       toast({
         title: "Registration Failed",
         description: error.message || "An unknown error occurred. Please try again.",
@@ -73,7 +75,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await loginWithGoogle();
-      toast({ title: "Login Successful!", description: "Welcome to Zizo_MediAI." });
+      toast({ title: "Authenticating with Google...", description: "Please follow the prompts." });
     } catch (error: any) {
         console.error("Google login failed:", error);
         toast({
@@ -86,14 +88,13 @@ export default function RegisterPage() {
     }
   };
 
-   const handleRoleSelection = async () => {
+  const handleRoleSelection = async () => {
+    if (!user) return;
     setIsSubmitting(true);
     try {
-      if (user) {
-        await updateUserRole(user.uid, selectedRole); // Call a new function to update the role
-        toast({ title: "Role Updated!", description: `Your role has been set to ${selectedRole}.` });
-        router.push(`/${selectedRole}/dashboard`); // Redirect to the appropriate dashboard
-      }
+      await updateUserRole(user.uid, selectedRole);
+      toast({ title: "Role Updated!", description: `Your role has been set to ${selectedRole}. Redirecting...` });
+      router.push(`/${selectedRole}/dashboard`);
     } catch (error: any) {
       console.error("Role update failed:", error);
       toast({ title: "Role Update Failed", description: error.message || "An unknown error occurred.", variant: "destructive" });
@@ -101,9 +102,8 @@ export default function RegisterPage() {
       setIsSubmitting(false);
     }
   };
-
-
-  if (authLoading || user) {
+  
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Stethoscope className="h-12 w-12 animate-spin text-primary" />
@@ -116,141 +116,144 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md shadow-2xl rounded-xl overflow-hidden">
         <CardHeader className="text-center bg-primary/5 p-8">
           <Logo className="mx-auto mb-4 text-4xl" />
-          <CardTitle className="font-headline text-3xl text-primary">Create Your Account</CardTitle>
-          <CardDescription className="text-muted-foreground">Join Zizo_MediAI to manage your health.</CardDescription>
+          <CardTitle className="font-headline text-3xl text-primary">
+            {isGoogleSignupCompletion ? "Complete Your Profile" : "Create Your Account"}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            {isGoogleSignupCompletion ? `Welcome, ${user?.name}! Just one more step.` : "Join Zizo_MediAI to manage your health."}
+          </CardDescription>
         </CardHeader>
-         <CardContent className="p-6 sm:p-8">
+        <CardContent className="p-6 sm:p-8">
           {isGoogleSignupCompletion ? (
-            // Role selection UI for Google sign-up completion
             <div className="space-y-6">
-              <div className="text-center">
-                 <CardTitle className="font-headline text-2xl text-primary">Select Your Role</CardTitle>
-                 <CardDescription className="text-muted-foreground mt-2">
-                   You signed up with Google. Please select your role to continue.
-                 </CardDescription>
-              </div>
-               <FormItem>
-                    <FormLabel>I am a...</FormLabel>
-                     <Select onValueChange={(value: string) => setSelectedRole(value as UserRole)} defaultValue={selectedRole || 'patient'}>
-                        <SelectTrigger className="bg-input focus:ring-primary">
-                           <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">
-                          <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
-                        </SelectItem>
-                        <SelectItem value="doctor">
-                           <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                           <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-               <Button className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" onClick={handleRoleSelection} disabled={isSubmitting || authLoading}>
-                 {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
-                 {isSubmitting ? 'Updating Role...' : 'Continue'}
-               </Button>
+              <p className="text-center text-muted-foreground">Please select your role in the Zizo_MediAI ecosystem to finish setting up your account.</p>
+              <FormItem>
+                <FormLabel>I am a...</FormLabel>
+                <Select onValueChange={(value: string) => setSelectedRole(value as UserRole)} defaultValue={selectedRole || 'patient'}>
+                  <SelectTrigger className="bg-input focus:ring-primary">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="patient">
+                      <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
+                    </SelectItem>
+                    <SelectItem value="doctor">
+                      <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
+                    </SelectItem>
+                     <SelectItem value="admin">
+                        <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
+                     </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+              <Button className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" onClick={handleRoleSelection} disabled={isSubmitting}>
+                {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
+                {isSubmitting ? 'Saving...' : 'Complete Registration'}
+              </Button>
             </div>
           ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-               <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input type="text" placeholder="e.g., John Doe" {...field} className="bg-input focus:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="you@example.com" {...field} className="bg-input focus:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="•••••••• (min. 6 characters)" {...field} className="bg-input focus:ring-primary" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>I am a...</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="bg-input focus:ring-primary">
-                           <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
+                        <Input type="text" placeholder="e.g., John Doe" {...field} className="bg-input focus:ring-primary" />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="patient">
-                          <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
-                        </SelectItem>
-                        <SelectItem value="doctor">
-                           <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                           <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" disabled={isSubmitting || authLoading}>
-                {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
-                {isSubmitting ? 'Creating Account...' : 'Register'}
-              </Button>
-            </form>
-          </Form>
-           )}
-           {!isGoogleSignupCompletion && (
-             <div className="relative my-6">
-             <div className="absolute inset-0 flex items-center">
-                 <span className="w-full border-t" />
-             </div>
-             <div className="relative flex justify-center text-xs uppercase">
-                 <span className="bg-card px-2 text-muted-foreground">
-                 Or continue with
-                 </span>
-             </div>
-            </div>
-           )}
-           <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting || authLoading}>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="you@example.com" {...field} className="bg-input focus:ring-primary" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder="•••••••• (min. 6 characters)" {...field} className="bg-input focus:ring-primary" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>I am a...</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-input focus:ring-primary">
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="patient">
+                            <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
+                          </SelectItem>
+                          <SelectItem value="doctor">
+                            <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
+                          </SelectItem>
+                          <SelectItem value="admin">
+                             <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" disabled={isSubmitting}>
+                  {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
+                  {isSubmitting ? 'Creating Account...' : 'Register'}
+                </Button>
+              </form>
+            </Form>
+          )}
+
+          {!isGoogleSignupCompletion && (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting}>
                 <GoogleIcon className="mr-2 h-4 w-4"/> Google
-            </Button>
+              </Button>
+            </>
+          )}
         </CardContent>
         <CardFooter className="flex flex-col items-center p-6 bg-primary/5">
-          <Button variant="link" className="text-sm text-muted-foreground hover:text-foreground">
-            Already have an account? <Link href="/login" className="text-accent ml-1 font-semibold">Login</Link>
-          </Button>
+          {!isGoogleSignupCompletion && (
+            <Button variant="link" className="text-sm text-muted-foreground hover:text-foreground">
+              Already have an account? <Link href="/login" className="text-accent ml-1 font-semibold">Login</Link>
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>
