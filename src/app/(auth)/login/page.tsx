@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,7 +37,7 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 export default function LoginPage() {
   const { login, loginWithGoogle, isLoading: authLoading, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
+  const router = useRouter();  const pathname = usePathname();
   const { toast } = useToast();
 
   const form = useForm<LoginFormValues>({
@@ -85,6 +85,14 @@ export default function LoginPage() {
     }
   };
 
+  // Redirect new Google sign-ups from the login page to the register page
+  useEffect(() => {
+    if (!authLoading && user && user.role === 'patient' && pathname === '/login') {
+      router.push('/register?fromGoogle=true');
+    }
+  }, [authLoading, user, router, pathname]);
+
+
 
   if (authLoading || user) {
     return (
@@ -100,7 +108,13 @@ export default function LoginPage() {
         <CardHeader className="text-center bg-primary/5 p-8">
           <Logo className="mx-auto mb-4 text-4xl" />
           <CardTitle className="font-headline text-3xl text-primary">Welcome to Zizo_MediAI</CardTitle>
-          <CardDescription className="text-muted-foreground">Sign in to access your dashboard.</CardDescription>
+          <div className="flex items-center justify-center mt-2">
+            <LogIn className="mr-2 h-7 w-7 text-primary" />
+            <CardTitle className="font-headline text-2xl text-primary">Sign In</CardTitle>
+          </div>
+ <CardDescription className="text-muted-foreground mt-2">
+            Access your Zizo_MediAI dashboard by signing in below.
+          </CardDescription>
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
           <Form {...form}>
@@ -138,12 +152,15 @@ export default function LoginPage() {
             </form>
           </Form>
           <div className="relative my-6">
+            <p className="text-center text-sm text-muted-foreground mb-4">
+                Or sign in using your Google account
+            </p>
             <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
+                
                 </span>
             </div>
           </div>

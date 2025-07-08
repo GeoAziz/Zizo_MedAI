@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,6 +21,7 @@ export interface NavItem {
 
 interface AuthUser extends User {
     name?: string;
+    role?: UserRole;
 }
 
 interface AuthContextType {
@@ -30,6 +31,7 @@ interface AuthContextType {
   signUp: (data: any) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => void;
+  updateUserRole: (uid: string, role: UserRole) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -120,13 +122,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // The onAuthStateChanged listener will handle the result.
   };
 
+  const updateUserRole = async (uid: string, role: UserRole) => {
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, { role: role });
+  };
 
   const logout = async () => {
     await signOut(auth);
     router.push('/login');
   };
   
-  const value = { user, role, isLoading, login, signUp, loginWithGoogle, logout };
+  const value = { user, role, isLoading, login, signUp, loginWithGoogle, logout, updateUserRole };
 
   return (
     <AuthContext.Provider value={value}>

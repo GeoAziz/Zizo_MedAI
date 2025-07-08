@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Logo } from '@/components/logo';
 import { useAuth, UserRole } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 import { UserPlus, Stethoscope, User, ShieldAlert } from 'lucide-react';
 
 const registerSchema = z.object({
@@ -38,7 +39,8 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function RegisterPage() {
-  const { signUp, loginWithGoogle, isLoading: authLoading, user } = useAuth();
+  const { signUp, loginWithGoogle, isLoading: authLoading, user, updateUserRole } = useAuth();
+  const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -47,6 +49,8 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", role: "patient" },
   });
+  const isGoogleSignupCompletion = searchParams.get('fromGoogle') === 'true';
+  const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
 
   const onSubmit: SubmitHandler<RegisterFormValues> = async (data) => {
     setIsSubmitting(true);
@@ -54,7 +58,7 @@ export default function RegisterPage() {
       await signUp(data);
       toast({ title: "Registration Successful!", description: "Your account has been created." });
     } catch (error: any) {
-      console.error("Registration failed:", error);
+      console.error("Registration fjailed:", error);
       toast({
         title: "Registration Failed",
         description: error.message || "An unknown error occurred. Please try again.",
@@ -82,6 +86,22 @@ export default function RegisterPage() {
     }
   };
 
+   const handleRoleSelection = async () => {
+    setIsSubmitting(true);
+    try {
+      if (user) {
+        await updateUserRole(user.uid, selectedRole); // Call a new function to update the role
+        toast({ title: "Role Updated!", description: `Your role has been set to ${selectedRole}.` });
+        router.push(`/${selectedRole}/dashboard`); // Redirect to the appropriate dashboard
+      }
+    } catch (error: any) {
+      console.error("Role update failed:", error);
+      toast({ title: "Role Update Failed", description: error.message || "An unknown error occurred.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   if (authLoading || user) {
     return (
@@ -99,7 +119,42 @@ export default function RegisterPage() {
           <CardTitle className="font-headline text-3xl text-primary">Create Your Account</CardTitle>
           <CardDescription className="text-muted-foreground">Join Zizo_MediAI to manage your health.</CardDescription>
         </CardHeader>
-        <CardContent className="p-6 sm:p-8">
+         <CardContent className="p-6 sm:p-8">
+          {isGoogleSignupCompletion ? (
+            // Role selection UI for Google sign-up completion
+            <div className="space-y-6">
+              <div className="text-center">
+                 <CardTitle className="font-headline text-2xl text-primary">Select Your Role</CardTitle>
+                 <CardDescription className="text-muted-foreground mt-2">
+                   You signed up with Google. Please select your role to continue.
+                 </CardDescription>
+              </div>
+               <FormItem>
+                    <FormLabel>I am a...</FormLabel>
+                     <Select onValueChange={(value: string) => setSelectedRole(value as UserRole)} defaultValue={selectedRole || 'patient'}>
+                        <SelectTrigger className="bg-input focus:ring-primary">
+                           <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="patient">
+                          <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
+                        </SelectItem>
+                        <SelectItem value="doctor">
+                           <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
+                        </SelectItem>
+                        <SelectItem value="admin">
+                           <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+               <Button className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" onClick={handleRoleSelection} disabled={isSubmitting || authLoading}>
+                 {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
+                 {isSubmitting ? 'Updating Role...' : 'Continue'}
+               </Button>
+            </div>
+          ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                <FormField
@@ -175,16 +230,19 @@ export default function RegisterPage() {
               </Button>
             </form>
           </Form>
-           <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+           )}
+           {!isGoogleSignupCompletion && (
+             <div className="relative my-6">
+             <div className="absolute inset-0 flex items-center">
+                 <span className="w-full border-t" />
+             </div>
+             <div className="relative flex justify-center text-xs uppercase">
+                 <span className="bg-card px-2 text-muted-foreground">
+                 Or continue with
+                 </span>
+             </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-                </span>
-            </div>
-          </div>
+           )}
            <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting || authLoading}>
                 <GoogleIcon className="mr-2 h-4 w-4"/> Google
             </Button>
