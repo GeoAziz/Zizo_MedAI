@@ -31,6 +31,37 @@ This file provides the login credentials for the default users created by the `n
 - **Name:** Dr. Ken Miles
 - **UID:** `doc_ken_miles`
 
+### Dr. Anya Sharma
+- **Role:** Doctor
+- **Email:** `anya.sharma@zizomed.ai`
+- **Name:** Dr. Anya Sharma
+- **UID:** `doc_anya_sharma`
+
+### Dr. Lee Min
+- **Role:** Doctor
+- **Email:** `lee.min@zizomed.ai`
+- **Name:** Dr. Lee Min
+- **UID:** `doc_lee_min`
+
+### Dr. Emily Carter
+- **Role:** Doctor
+- **Email:** `emily.carter@zizomed.ai`
+- **Name:** Dr. Emily Carter
+- **UID:** `doc_emily_carter`
+
+### Dr. Omar Hassan
+- **Role:** Doctor
+- **Email:** `omar.hassan@zizomed.ai`
+- **Name:** Dr. Omar Hassan
+- **UID:** `doc_omar_hassan`
+
+### Dr. Sarah Woods
+- **Role:** Doctor
+- **Email:** `sarah.woods@zizomed.ai`
+- **Name:** Dr. Sarah Woods
+- **UID:** `doc_sarah_woods`
+
+
 *Doctors can view their patient list, start live consultations, write e-prescriptions, and use AI-powered charting tools.*
 
 ---
@@ -54,5 +85,36 @@ This file provides the login credentials for the default users created by the `n
 - **Email:** `alice.b@example.com`
 - **Name:** Alice B. Brown
 - **UID:** `patient_alice_b`
+
+### Robert C. Johnson
+- **Role:** Patient
+- **Email:** `robert.c@example.com`
+- **Name:** Robert C. Johnson
+- **UID:** `patient_robert_c`
+
+### Emily K. Davis
+- **Role:** Patient
+- **Email:** `emily.d@example.com`
+- **Name:** Emily K. Davis
+- **UID:** `patient_emily_d`
+
+### Michael P. Wilson
+- **Role:** Patient
+- **Email:** `michael.w@example.com`
+- **Name:** Michael P. Wilson
+- **UID:** `patient_michael_w`
+
+### David L. Lee
+- **Role:** Patient
+- **Email:** `david.l@example.com`
+- **Name:** David L. Lee
+- **UID:** `patient_david_l`
+
+### Sophia T. Miller
+- **Role:** Patient
+- **Email:** `sophia.m@example.com`
+- **Name:** Sophia T. Miller
+- **UID:** `patient_sophia_m`
+
 
 *Patients can access their dashboard, use the AI consultation feature, book appointments, and view their medical records.*
