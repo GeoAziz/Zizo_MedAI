@@ -125,33 +125,35 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent className="p-6 sm:p-8">
           {isGoogleSignupCompletion ? (
-            <div className="space-y-6">
-              <p className="text-center text-muted-foreground">Please select your role in the Zizo_MediAI ecosystem to finish setting up your account.</p>
-              <FormItem>
-                <FormLabel>I am a...</FormLabel>
-                <Select onValueChange={(value: string) => setSelectedRole(value as UserRole)} defaultValue={selectedRole || 'patient'}>
-                  <SelectTrigger className="bg-input focus:ring-primary">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="patient">
-                      <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
-                    </SelectItem>
-                    <SelectItem value="doctor">
-                      <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
-                    </SelectItem>
-                     <SelectItem value="admin">
-                        <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
-                     </SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-              <Button className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" onClick={handleRoleSelection} disabled={isSubmitting}>
-                {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
-                {isSubmitting ? 'Saving...' : 'Complete Registration'}
-              </Button>
-            </div>
+            <Form {...form}>
+              <div className="space-y-6">
+                <p className="text-center text-muted-foreground">Please select your role in the Zizo_MediAI ecosystem to finish setting up your account.</p>
+                <FormItem>
+                  <FormLabel>I am a...</FormLabel>
+                  <Select onValueChange={(value: string) => setSelectedRole(value as UserRole)} defaultValue={selectedRole || 'patient'}>
+                    <SelectTrigger className="bg-input focus:ring-primary">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="patient">
+                        <div className="flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Patient</div>
+                      </SelectItem>
+                      <SelectItem value="doctor">
+                        <div className="flex items-center gap-2"><Stethoscope className="h-4 w-4 text-primary" /> Doctor</div>
+                      </SelectItem>
+                       <SelectItem value="admin">
+                          <div className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-primary" /> Admin</div>
+                       </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+                <Button className="w-full text-lg py-3 rounded-lg shadow-md transition-transform hover:scale-105" onClick={handleRoleSelection} disabled={isSubmitting}>
+                  {isSubmitting ? <Stethoscope className="h-5 w-5 animate-spin mr-2"/> : <UserPlus className="mr-2 h-5 w-5" />}
+                  {isSubmitting ? 'Saving...' : 'Complete Registration'}
+                </Button>
+              </div>
+            </Form>
           ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
