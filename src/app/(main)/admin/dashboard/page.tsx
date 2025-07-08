@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
             <Image src="https://placehold.co/300x200.png" alt="System Map Placeholder" width={300} height={200} className="rounded-md shadow-md" data-ai-hint="network map" />
           </CardContent>
           <CardFooter>
-             <Button asChild variant="outline" className="w-full" disabled>
+             <Button asChild variant="outline" className="w-full">
                 <Link href="/admin/system-map">View Full Map</Link>
              </Button>
           </CardFooter>
@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
              <p className="text-sm mb-4">Track potential outbreaks and visualize spread patterns with AI-driven insights.</p>
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground" disabled>
+            <Button asChild variant="outline" className="w-full bg-background/20 hover:bg-background/30 border-primary-foreground text-primary-foreground hover:text-primary-foreground">
                 <Link href="/admin/outbreak-monitor">Access Monitor</Link>
             </Button>
           </CardFooter>
@@ -85,7 +85,7 @@ export default function AdminDashboardPage() {
             <p className="text-muted-foreground">Assign drones, ambulances, and staff to crises.</p>
           </CardContent>
            <CardFooter>
-             <Button asChild variant="outline" className="w-full" disabled>
+             <Button asChild variant="outline" className="w-full">
                 <Link href="/admin/resource-dispatch">Dispatch Resources</Link>
              </Button>
           </CardFooter>

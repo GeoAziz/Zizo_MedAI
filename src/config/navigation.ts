@@ -47,9 +47,9 @@ export const navLinks: Record<string, NavItem[]> = {
   ],
   admin: [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/system-map', label: 'System Map', icon: Map, disabled: true },
-    { href: '/admin/resource-dispatch', label: 'Resource Dispatch', icon: Waypoints, disabled: true },
-    { href: '/admin/outbreak-monitor', label: 'Outbreak Monitor', icon: Activity, disabled: true },
+    { href: '/admin/system-map', label: 'System Map', icon: Map },
+    { href: '/admin/resource-dispatch', label: 'Resource Dispatch', icon: Waypoints },
+    { href: '/admin/outbreak-monitor', label: 'Outbreak Monitor', icon: Activity },
     { href: '/admin/user-management', label: 'User Management', icon: Users },
     { href: '/admin/ai-logs', label: 'AI Logs', icon: GitFork },
   ],
