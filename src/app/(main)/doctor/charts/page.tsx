@@ -76,7 +76,7 @@ export default function DoctorChartsPage() {
     }
     setAnalysis(null); // Clear previous analysis
     setIsAnalyzing(false);
-  }, [selectedPatientId]);
+  }, [selectedPatientId, patientChartEntries]);
 
 
   const handleEntryClick = (entry: ChartEntry) => {
