@@ -2,7 +2,6 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -70,7 +69,6 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await loginWithGoogle();
-      // The auth context will handle redirection. We can show a generic toast.
       toast({ title: "Authenticating with Google...", description: "Please follow the prompts." });
     } catch (error: any) {
         console.error("Google login failed:", error);
@@ -84,8 +82,6 @@ export default function LoginPage() {
     }
   };
 
-  // The AuthProvider now handles redirects, so we just show a loading spinner
-  // if isLoading is true or a user object exists but the role isn't determined yet.
   if (authLoading || (user && !user.role)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -158,9 +154,9 @@ export default function LoginPage() {
             </Button>
         </CardContent>
         <CardFooter className="flex flex-col items-center p-6 bg-primary/5">
-          <Button variant="link" className="text-sm text-muted-foreground hover:text-foreground">
-            Don't have an account? <Link href="/register" className="text-accent ml-1 font-semibold">Register</Link>
-          </Button>
+          <p className="text-xs text-muted-foreground">
+            This is a managed system. Please contact your hospital administrator if you have issues with your account.
+          </p>
         </CardFooter>
       </Card>
     </div>
