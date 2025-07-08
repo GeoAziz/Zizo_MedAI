@@ -4,7 +4,7 @@
 import type { LucideIcon } from 'lucide-react';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           userName = userData.name || userName;
         } else {
           // User is authenticated but doesn't have a doc in Firestore.
-          // This is a new sign-up, likely via Google redirect. Create their doc.
+          // This is a new sign-up, likely via Google. Create their doc.
           userRole = 'patient'; // Default new sign-ups to patient
           await setDoc(userDocRef, {
             uid: firebaseUser.uid,
@@ -114,10 +114,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // Using signInWithRedirect is better for environments like embedded IDEs
-    // where popups can be blocked or have origin issues.
-    await signInWithRedirect(auth, provider);
-    // The onAuthStateChanged listener will handle the result of the redirect.
+    // We're switching back to signInWithPopup. Now that the correct domain is authorized,
+    // this should work better than the redirect flow which is blocked by iframe security policies.
+    await signInWithPopup(auth, provider);
+    // The onAuthStateChanged listener will handle the result.
   };
 
 
