@@ -9,25 +9,6 @@ interface ProfileDetailProps {
   icon: React.ElementType;
 }
 
-function ProfileDetail({ label, value, icon: Icon }: ProfileDetailProps) {
-  return (
-    <div className="flex items-start space-x-3 py-3 border-b border-border last:border-b-0">
-      <Icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        {Array.isArray(value) ? (
-          <ul className="list-disc list-inside">
-            {value.map((item, index) => <li key={index} className="text-base font-medium text-foreground">{item}</li>)}
-          </ul>
-        ) : (
-          <p className="text-base font-medium text-foreground">{value}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-
 export default function EmergencyProfilePage() {
   const emergencyProfile = {
     fullName: "Johnathan Patient Doe",
@@ -41,6 +22,24 @@ export default function EmergencyProfilePage() {
       { name: "Dr. Eva Core", relationship: "Primary Physician", phone: "+1-555-0102" },
     ],
   };
+
+  function ProfileDetail({ label, value, icon: Icon }: ProfileDetailProps) {
+    return (
+      <div className="flex items-start space-x-3 py-3 border-b border-border last:border-b-0">
+        <Icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+        <div>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          {Array.isArray(value) ? (
+            <ul className="list-disc list-inside">
+              {value.map((item, index) => <li key={index} className="text-base font-medium text-foreground">{item}</li>)}
+            </ul>
+          ) : (
+            <p className="text-base font-medium text-foreground">{value}</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
