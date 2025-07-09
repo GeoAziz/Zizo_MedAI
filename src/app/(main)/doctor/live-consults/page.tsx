@@ -5,10 +5,8 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Bot, UserCircle, Video, Mic, Send, Paperclip, Sparkles, Brain, Activity, FileText, BarChart3, AlertTriangle, PhoneOff } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -32,14 +30,13 @@ interface Patient {
     medicalHistory: string;
 }
 
-const mockPatientsData: Patient[] = [
-  { id: "P001", name: "Johnathan P. Doe", age: 38, condition: "Hypertension, Asthma", symptoms: "Persistent cough, mild fever, and fatigue for the last 3 days.", medicalHistory: "Asthma diagnosed in childhood, seasonal allergies. Allergic to penicillin." },
-  { id: "P002", name: "Jane A. Smith", age: 45, condition: "Diabetes Type 2", symptoms: "Increased thirst, frequent urination, and unexplained weight loss.", medicalHistory: "Family history of diabetes. Takes Metformin 500mg daily." },
-  { id: "P003", name: "Alice B. Brown", age: 29, condition: "Migraines", symptoms: "Severe throbbing headache on one side of the head, nausea, and sensitivity to light.", medicalHistory: "Occasional migraines, no other chronic conditions." },
-];
-
-
 export default function DoctorLiveConsultsPage() {
+  const mockPatientsData: Patient[] = [
+    { id: "P001", name: "Johnathan P. Doe", age: 38, condition: "Hypertension, Asthma", symptoms: "Persistent cough, mild fever, and fatigue for the last 3 days.", medicalHistory: "Asthma diagnosed in childhood, seasonal allergies. Allergic to penicillin." },
+    { id: "P002", name: "Jane A. Smith", age: 45, condition: "Diabetes Type 2", symptoms: "Increased thirst, frequent urination, and unexplained weight loss.", medicalHistory: "Family history of diabetes. Takes Metformin 500mg daily." },
+    { id: "P003", name: "Alice B. Brown", age: 29, condition: "Migraines", symptoms: "Severe throbbing headache on one side of the head, nausea, and sensitivity to light.", medicalHistory: "Occasional migraines, no other chronic conditions." },
+  ];
+
   const [isConsultActive, setIsConsultActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -56,7 +53,7 @@ export default function DoctorLiveConsultsPage() {
     if (patientIdFromQuery && mockPatientsData.find(p => p.id === patientIdFromQuery)) {
       setSelectedPatientId(patientIdFromQuery);
     }
-  }, [patientIdFromQuery]);
+  }, [patientIdFromQuery, mockPatientsData]);
 
   const patientDetails = mockPatientsData.find(p => p.id === selectedPatientId);
 
@@ -226,7 +223,7 @@ export default function DoctorLiveConsultsPage() {
         {/* Main Panel: Video & Patient Info */}
         <Card className="lg:col-span-2 shadow-xl rounded-xl flex flex-col">
           <CardHeader className="flex-shrink-0">
-            <CardTitle className="font-headline text-xl">Patient: {patientDetails.name} <Badge variant="secondary">{patientDetails.id}</Badge></CardTitle>
+            <CardTitle className="font-headline text-xl">Patient: {patientDetails.name} </CardTitle>
             <CardDescription>Age: {patientDetails.age} | Known Conditions: {patientDetails.condition}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col items-center justify-center bg-secondary/30 dark:bg-secondary/10 p-2 relative overflow-hidden">
@@ -305,5 +302,3 @@ export default function DoctorLiveConsultsPage() {
     </div>
   );
 }
-
-    

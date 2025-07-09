@@ -8,30 +8,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LifeBuoy, Bot, MessageSquare, Search, BookOpen } from "lucide-react";
 
-const mockFaqs = [
-  {
-    question: "How do I use the AI Consultation feature?",
-    answer: "Navigate to 'AI Consultation' from your dashboard. Describe your symptoms in detail, add any relevant medical history, and click 'Get AI Diagnosis'. Zizo_MediAI will provide potential insights. Remember, this is not a substitute for professional medical advice."
-  },
-  {
-    question: "Is my data secure on Zizo_MediAI?",
-    answer: "Yes, Zizo_MediAI uses state-of-the-art encryption and security protocols, including the conceptual MediChain for record storage, to protect your personal health information. (Note: This is a prototype, real data security would require extensive implementation)."
-  },
-  {
-    question: "How do I book an appointment?",
-    answer: "Go to the 'Facilities' section, find a suitable facility or doctor, and use the 'Book Visit' or 'Book Appointment' options. Fill in the required details to schedule. (Booking functionality is currently mocked)."
-  },
-  {
-    question: "What is the Virtual Body Viewer?",
-    answer: "The Virtual Body Viewer is a conceptual feature designed to provide an interactive 3D visualization of your health, integrating data from wearables and scans. It's currently for illustrative purposes."
-  },
-  {
-    question: "Who can I contact for technical support?",
-    answer: "For technical issues, you can use the 'AI Support Chat' (conceptual) or submit a bug report through the 'Settings' page. For urgent medical concerns, always contact emergency services or your healthcare provider."
-  }
-];
-
 export default function SupportPage() {
+  const mockFaqs = [
+    {
+      question: "How do I use the AI Consultation feature?",
+      answer: "Navigate to 'AI Consultation' from your dashboard. Describe your symptoms in detail, add any relevant medical history, and click 'Get AI Diagnosis'. Zizo_MediAI will provide potential insights. Remember, this is not a substitute for professional medical advice."
+    },
+    {
+      question: "Is my data secure on Zizo_MediAI?",
+      answer: "Yes, Zizo_MediAI uses state-of-the-art encryption and security protocols, including the conceptual MediChain for record storage, to protect your personal health information. (Note: This is a prototype, real data security would require extensive implementation)."
+    },
+    {
+      question: "How do I book an appointment?",
+      answer: "Go to the 'Facilities' section, find a suitable facility or doctor, and use the 'Book Visit' or 'Book Appointment' options. Fill in the required details to schedule. (Booking functionality is currently mocked)."
+    },
+    {
+      question: "What is the Virtual Body Viewer?",
+      answer: "The Virtual Body Viewer is a conceptual feature designed to provide an interactive 3D visualization of your health, integrating data from wearables and scans. It's currently for illustrative purposes."
+    },
+    {
+      question: "Who can I contact for technical support?",
+      answer: "For technical issues, you can use the 'AI Support Chat' (conceptual) or submit a bug report through the 'Settings' page. For urgent medical concerns, always contact emergency services or your healthcare provider."
+    }
+  ];
+
   return (
     <div className="space-y-8">
       <PageHeader title="Support Center" description="Find answers, tutorials, and get help with Zizo_MediAI." icon={LifeBuoy} />
@@ -104,4 +104,3 @@ export default function SupportPage() {
     </div>
   );
 }
-

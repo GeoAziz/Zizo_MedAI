@@ -1,3 +1,5 @@
+
+"use client";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -6,13 +8,13 @@ import { Hospital, MapPin, Clock, Search, CalendarPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const mockFacilities = [
-  { id: "F001", name: "Zizo General Hospital", location: "City Center", capacity: "500 Beds", rating: 4.5, waitTime: "15 min", specialty: "General Medicine" },
-  { id: "F002", name: "MediAI Clinic North", location: "North Suburbs", capacity: "50 Beds", rating: 4.2, waitTime: "10 min", specialty: "Family Care" },
-  { id: "F003", name: "BioScan Diagnostics Hub", location: "Tech Park", capacity: "N/A", rating: 4.8, waitTime: "5 min", specialty: "Advanced Imaging" },
-];
-
 export default function FacilitiesPage() {
+  const mockFacilities = [
+    { id: "F001", name: "Zizo General Hospital", location: "City Center", capacity: "500 Beds", rating: 4.5, waitTime: "15 min", specialty: "General Medicine" },
+    { id: "F002", name: "MediAI Clinic North", location: "North Suburbs", capacity: "50 Beds", rating: 4.2, waitTime: "10 min", specialty: "Family Care" },
+    { id: "F003", name: "BioScan Diagnostics Hub", location: "Tech Park", capacity: "N/A", rating: 4.8, waitTime: "5 min", specialty: "Advanced Imaging" },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader 

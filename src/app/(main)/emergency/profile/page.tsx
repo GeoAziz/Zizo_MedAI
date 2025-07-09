@@ -1,3 +1,5 @@
+
+"use client";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +91,3 @@ export default function EmergencyProfilePage() {
     </div>
   );
 }
-
-// Note: Replace UserCircle for medications/conditions with more appropriate icons if available or desired.
-// Example: Heart for Hypertension, Lung for Asthma, Pill for Medications.

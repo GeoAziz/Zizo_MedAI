@@ -7,16 +7,16 @@ import { Activity, AlertTriangle, BarChart2, Users, Bot, Percent, MapPin } from 
 import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 
-const mockOutbreakData = {
-  currentAlertLevel: "High",
-  activeRegions: 3,
-  predictedCasesNextWeek: 150,
-  confidence: 75, // percentage
-  keyFactors: ["Increased travel from Region X", "Low vaccination rates in Area Y", "Seasonal flu overlap"],
-  dominantStrain: "Influenza A (H3N2) - Variant Z",
-};
-
 export default function AdminOutbreakMonitorPage() {
+  const mockOutbreakData = {
+    currentAlertLevel: "High",
+    activeRegions: 3,
+    predictedCasesNextWeek: 150,
+    confidence: 75, // percentage
+    keyFactors: ["Increased travel from Region X", "Low vaccination rates in Area Y", "Seasonal flu overlap"],
+    dominantStrain: "Influenza A (H3N2) - Variant Z",
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader title="Outbreak Monitor" description="AI-driven predictions, heatmaps, and simulation tools for epidemic intelligence." icon={Activity} />

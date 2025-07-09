@@ -9,62 +9,62 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
-const mockFacilitiesData = {
-  "F001": {
-    name: "Zizo General Hospital",
-    address: "123 Health St, City Center, ZizoLand 12345",
-    phone: "+1-555-0100",
-    type: "General Hospital",
-    capacity: "500 Beds",
-    currentWaitTime: "20 min (ER)",
-    rating: 4.7,
-    services: ["Emergency Care", "Surgery", "Cardiology", "Pediatrics", "Oncology", "Radiology"],
-    specialties: ["Advanced Cardiac Unit", "Pediatric ICU", "Robotic Surgery Center"],
-    doctors: [
-      { name: "Dr. Eva Core", specialty: "Cardiology" },
-      { name: "Dr. Lee Min", specialty: "Pediatrics" },
-      { name: "Dr. Anya Sharma", specialty: "General Surgery" },
-    ],
-    imageUrl: "https://placehold.co/800x400.png?text=Zizo+General+Hospital",
-    dataAiHint: "modern hospital exterior"
-  },
-  "F002": {
-    name: "MediAI Clinic North",
-    address: "456 Wellness Ave, North Suburbs, ZizoLand 67890",
-    phone: "+1-555-0200",
-    type: "Clinic",
-    capacity: "50 Beds (Observation)",
-    currentWaitTime: "10 min (Walk-in)",
-    rating: 4.2,
-    services: ["Family Medicine", "Preventive Care", "Vaccinations", "Minor Injuries", "AI Diagnostics"],
-    specialties: ["AI-Powered Symptom Checker", "Telehealth Services"],
-    doctors: [
-      { name: "Dr. Ken Miles", specialty: "Family Medicine" },
-      { name: "Dr. Sarah Woods", specialty: "Dermatology (Visiting)" },
-    ],
-    imageUrl: "https://placehold.co/800x400.png?text=MediAI+Clinic+North",
-    dataAiHint: "clinic building"
-  },
-   "F003": {
-    name: "BioScan Diagnostics Hub",
-    address: "789 Tech Park Rd, Innovation District, ZizoLand 54321",
-    phone: "+1-555-0300",
-    type: "Diagnostics Center",
-    capacity: "N/A",
-    currentWaitTime: "5 min (Scheduled Appt.)",
-    rating: 4.9,
-    services: ["MRI", "CT Scan", "X-Ray", "Ultrasound", "Genetic Testing", "Pathology Lab"],
-    specialties: ["AI-Enhanced Image Analysis", "Rapid Genome Sequencing"],
-    doctors: [
-      { name: "Dr. Lin Chen", specialty: "Radiology" },
-      { name: "Dr. Omar Hassan", specialty: "Pathology" },
-    ],
-    imageUrl: "https://placehold.co/800x400.png?text=BioScan+Diagnostics",
-    dataAiHint: "medical lab building"
-  }
-};
-
 export default function FacilityDetailsPage() {
+  const mockFacilitiesData = {
+    "F001": {
+      name: "Zizo General Hospital",
+      address: "123 Health St, City Center, ZizoLand 12345",
+      phone: "+1-555-0100",
+      type: "General Hospital",
+      capacity: "500 Beds",
+      currentWaitTime: "20 min (ER)",
+      rating: 4.7,
+      services: ["Emergency Care", "Surgery", "Cardiology", "Pediatrics", "Oncology", "Radiology"],
+      specialties: ["Advanced Cardiac Unit", "Pediatric ICU", "Robotic Surgery Center"],
+      doctors: [
+        { name: "Dr. Eva Core", specialty: "Cardiology" },
+        { name: "Dr. Lee Min", specialty: "Pediatrics" },
+        { name: "Dr. Anya Sharma", specialty: "General Surgery" },
+      ],
+      imageUrl: "https://placehold.co/800x400.png?text=Zizo+General+Hospital",
+      dataAiHint: "modern hospital exterior"
+    },
+    "F002": {
+      name: "MediAI Clinic North",
+      address: "456 Wellness Ave, North Suburbs, ZizoLand 67890",
+      phone: "+1-555-0200",
+      type: "Clinic",
+      capacity: "50 Beds (Observation)",
+      currentWaitTime: "10 min (Walk-in)",
+      rating: 4.2,
+      services: ["Family Medicine", "Preventive Care", "Vaccinations", "Minor Injuries", "AI Diagnostics"],
+      specialties: ["AI-Powered Symptom Checker", "Telehealth Services"],
+      doctors: [
+        { name: "Dr. Ken Miles", specialty: "Family Medicine" },
+        { name: "Dr. Sarah Woods", specialty: "Dermatology (Visiting)" },
+      ],
+      imageUrl: "https://placehold.co/800x400.png?text=MediAI+Clinic+North",
+      dataAiHint: "clinic building"
+    },
+     "F003": {
+      name: "BioScan Diagnostics Hub",
+      address: "789 Tech Park Rd, Innovation District, ZizoLand 54321",
+      phone: "+1-555-0300",
+      type: "Diagnostics Center",
+      capacity: "N/A",
+      currentWaitTime: "5 min (Scheduled Appt.)",
+      rating: 4.9,
+      services: ["MRI", "CT Scan", "X-Ray", "Ultrasound", "Genetic Testing", "Pathology Lab"],
+      specialties: ["AI-Enhanced Image Analysis", "Rapid Genome Sequencing"],
+      doctors: [
+        { name: "Dr. Lin Chen", specialty: "Radiology" },
+        { name: "Dr. Omar Hassan", specialty: "Pathology" },
+      ],
+      imageUrl: "https://placehold.co/800x400.png?text=BioScan+Diagnostics",
+      dataAiHint: "medical lab building"
+    }
+  };
+
   const params = useParams();
   const router = useRouter();
   const facilityId = typeof params.id === 'string' ? params.id : null;

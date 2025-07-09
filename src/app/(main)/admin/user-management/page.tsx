@@ -90,7 +90,7 @@ export default function AdminUserManagementPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [toast]);
+  }, []);
 
   const onSubmit: SubmitHandler<CreateUserFormValues> = async (data) => {
     setIsSubmitting(true);

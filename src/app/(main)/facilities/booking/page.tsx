@@ -32,21 +32,20 @@ const bookingSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingSchema>;
 
-const availableTimes = ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM", "04:00 PM"];
-const facilities = [
-    { id: "F001", name: "Zizo General Hospital" },
-    { id: "F002", name: "MediAI Clinic North" },
-    { id: "F003", name: "BioScan Diagnostics Hub" },
-];
-const services = [
-    { id: "S001", name: "General Check-up" },
-    { id: "S002", name: "Specialist Consultation" },
-    { id: "S003", name: "Diagnostic Test" },
-    { id: "S004", name: "Vaccination" },
-];
-
-
 export default function FacilityBookingPage() {
+  const availableTimes = ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM", "04:00 PM"];
+  const facilities = [
+      { id: "F001", name: "Zizo General Hospital" },
+      { id: "F002", name: "MediAI Clinic North" },
+      { id: "F003", name: "BioScan Diagnostics Hub" },
+  ];
+  const services = [
+      { id: "S001", name: "General Check-up" },
+      { id: "S002", name: "Specialist Consultation" },
+      { id: "S003", name: "Diagnostic Test" },
+      { id: "S004", name: "Vaccination" },
+  ];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const { toast } = useToast();

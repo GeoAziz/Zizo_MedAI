@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,16 +43,16 @@ interface Surgery {
   notes?: string;
 }
 
-const mockInitialSurgeries: Surgery[] = [
-  { id: "S001", patientName: "Robert C. Johnson", patientId: "P004", procedure: "Knee Arthroscopy (Right)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true, notes: "Standard procedure, no complications expected." },
-  { id: "S002", patientName: "Alice B. Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true, notes: "Patient has mild asthma, monitor post-op breathing." },
-  { id: "S003", patientName: "David L. Lee", patientId: "P007", procedure: "Cataract Surgery (Left Eye)", surgeon: "Dr. Emily Carter", or: "OR 2", date: "2024-08-11", time: "11:00 AM", duration: "1 hour", status: "Scheduled", aiAssist: false },
-  { id: "S004", patientName: "Sophia T. Miller", patientId: "P008", procedure: "Gallbladder Removal (Laparoscopic)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-12", time: "08:00 AM", duration: "2.5 hours", status: "Pending Confirmation", aiAssist: true },
-  { id: "S005", patientName: "Michael P. Wilson", patientId: "P006", procedure: "Coronary Artery Bypass Graft (CABG x3)", surgeon: "Dr. Eva Core", or: "OR 4 (Cardiac)", date: "2024-08-12", time: "12:00 PM", duration: "5 hours", status: "Scheduled", aiAssist: true, notes: "High-risk patient due to comorbidities." },
-  { id: "S006", patientName: "Jane A. Smith", patientId: "P002", procedure: "Diabetic Foot Debridement", surgeon: "Dr. Ken Miles", or: "OR 2", date: "2024-08-10", time: "04:00 PM", duration: "45 mins", status: "Completed", aiAssist: false, notes: "Wound healing well." },
-];
-
 export default function DoctorSurgerySchedulePage() {
+  const mockInitialSurgeries: Surgery[] = [
+    { id: "S001", patientName: "Robert C. Johnson", patientId: "P004", procedure: "Knee Arthroscopy (Right)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true, notes: "Standard procedure, no complications expected." },
+    { id: "S002", patientName: "Alice B. Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true, notes: "Patient has mild asthma, monitor post-op breathing." },
+    { id: "S003", patientName: "David L. Lee", patientId: "P007", procedure: "Cataract Surgery (Left Eye)", surgeon: "Dr. Emily Carter", or: "OR 2", date: "2024-08-11", time: "11:00 AM", duration: "1 hour", status: "Scheduled", aiAssist: false },
+    { id: "S004", patientName: "Sophia T. Miller", patientId: "P008", procedure: "Gallbladder Removal (Laparoscopic)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-12", time: "08:00 AM", duration: "2.5 hours", status: "Pending Confirmation", aiAssist: true },
+    { id: "S005", patientName: "Michael P. Wilson", patientId: "P006", procedure: "Coronary Artery Bypass Graft (CABG x3)", surgeon: "Dr. Eva Core", or: "OR 4 (Cardiac)", date: "2024-08-12", time: "12:00 PM", duration: "5 hours", status: "Scheduled", aiAssist: true, notes: "High-risk patient due to comorbidities." },
+    { id: "S006", patientName: "Jane A. Smith", patientId: "P002", procedure: "Diabetic Foot Debridement", surgeon: "Dr. Ken Miles", or: "OR 2", date: "2024-08-10", time: "04:00 PM", duration: "45 mins", status: "Completed", aiAssist: false, notes: "Wound healing well." },
+  ];
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10T00:00:00"));
   const [surgeries, setSurgeries] = useState<Surgery[]>(mockInitialSurgeries);
   const [selectedSurgery, setSelectedSurgery] = useState<Surgery | null>(null);

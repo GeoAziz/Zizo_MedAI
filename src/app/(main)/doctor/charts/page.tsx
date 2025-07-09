@@ -17,7 +17,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 
-
 interface ChartEntry {
   date: string;
   type: string;
@@ -26,29 +25,28 @@ interface ChartEntry {
   dataAiHint?: string; 
 }
 
-const mockPatientsForChart = [
-  { id: "P001", name: "Johnathan P. Doe", dob: "1985-05-15" },
-  { id: "P002", name: "Jane A. Smith", dob: "1990-02-20" },
-  { id: "P003", name: "Alice B. Brown", dob: "1978-11-10" },
-];
-
-const mockChartEntries: Record<string, ChartEntry[]> = {
-  "P001": [
-    { date: "2024-07-25", type: "SOAP Note", content: "Patient reports stable condition. BP 130/80. Continue medication Losartan 50mg OD. Reviewed recent EKG - normal sinus rhythm.", image: null },
-    { date: "2024-07-10", type: "X-Ray Analysis", content: "Chest X-Ray shows clear lungs. No acute abnormalities. Mild scoliosis noted.", image: "https://placehold.co/400x300.png", dataAiHint: "chest xray" },
-    { date: "2024-06-15", type: "EKG Report", content: "Normal sinus rhythm, rate 72bpm. No significant ST changes.", image: "https://placehold.co/400x300.png", dataAiHint: "ekg strip" },
-  ],
-  "P002": [
-    { date: "2024-07-22", type: "Consultation Note", content: "Reviewed lab results (HbA1c 7.2%). Discussed diet and exercise modifications. Adjusted Metformin dosage to 1000mg BID.", image: null },
-    { date: "2024-07-01", type: "Retinal Scan", content: "Early signs of diabetic retinopathy detected in left eye. Refer to ophthalmology.", image: "https://placehold.co/400x300.png", dataAiHint: "retina scan" },
-  ],
-  "P003": [
-    { date: "2024-07-18", type: "Spirometry Test", content: "FEV1 85% predicted. Good response to albuterol. Patient counselled on inhaler technique.", image: "https://placehold.co/400x300.png", dataAiHint: "spirometry results" },
-  ]
-};
-
-
 export default function DoctorChartsPage() {
+  const mockPatientsForChart = [
+    { id: "P001", name: "Johnathan P. Doe", dob: "1985-05-15" },
+    { id: "P002", name: "Jane A. Smith", dob: "1990-02-20" },
+    { id: "P003", name: "Alice B. Brown", dob: "1978-11-10" },
+  ];
+  
+  const mockChartEntries: Record<string, ChartEntry[]> = {
+    "P001": [
+      { date: "2024-07-25", type: "SOAP Note", content: "Patient reports stable condition. BP 130/80. Continue medication Losartan 50mg OD. Reviewed recent EKG - normal sinus rhythm.", image: null },
+      { date: "2024-07-10", type: "X-Ray Analysis", content: "Chest X-Ray shows clear lungs. No acute abnormalities. Mild scoliosis noted.", image: "https://placehold.co/400x300.png", dataAiHint: "chest xray" },
+      { date: "2024-06-15", type: "EKG Report", content: "Normal sinus rhythm, rate 72bpm. No significant ST changes.", image: "https://placehold.co/400x300.png", dataAiHint: "ekg strip" },
+    ],
+    "P002": [
+      { date: "2024-07-22", type: "Consultation Note", content: "Reviewed lab results (HbA1c 7.2%). Discussed diet and exercise modifications. Adjusted Metformin dosage to 1000mg BID.", image: null },
+      { date: "2024-07-01", type: "Retinal Scan", content: "Early signs of diabetic retinopathy detected in left eye. Refer to ophthalmology.", image: "https://placehold.co/400x300.png", dataAiHint: "retina scan" },
+    ],
+    "P003": [
+      { date: "2024-07-18", type: "Spirometry Test", content: "FEV1 85% predicted. Good response to albuterol. Patient counselled on inhaler technique.", image: "https://placehold.co/400x300.png", dataAiHint: "spirometry results" },
+    ]
+  };
+
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(mockPatientsForChart[0].id);
   const [annotations, setAnnotations] = useState<string>("");
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -113,6 +111,63 @@ export default function DoctorChartsPage() {
       setIsAnalyzing(false);
     }
   };
+
+  const AnalysisResult = ({ analysis }: { analysis: AnalyzeImageOutput }) => (
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-semibold text-foreground mb-1">AI Summary</h4>
+        <p className="text-sm text-muted-foreground bg-secondary/50 p-2 rounded-md">{analysis.summary}</p>
+      </div>
+      <div>
+        <h4 className="font-semibold text-foreground mb-2">Potential Conditions</h4>
+        <div className="space-y-2">
+          {analysis.potentialConditions.map((item, i) => (
+            <div key={i} className="p-2 border rounded-md">
+              <div className="flex justify-between items-center">
+                <p className="font-medium text-sm">{item.condition}</p>
+                <Badge variant="secondary">{(item.confidence * 100).toFixed(0)}%</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{item.rationale}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+       <div>
+        <h4 className="font-semibold text-foreground mb-2">Observations</h4>
+        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+          {analysis.observations.map((obs, i) => <li key={i}>{obs}</li>)}
+        </ul>
+      </div>
+      <div className="!mt-6 p-2 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 text-xs rounded-md flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>This is an AI-generated analysis and is not a substitute for professional medical advice.</span>
+      </div>
+    </div>
+  );
+
+  const AnalysisSkeleton = () => (
+      <div className="space-y-4 animate-pulse">
+          <div>
+              <Skeleton className="h-5 w-1/3 mb-2" />
+              <Skeleton className="h-12 w-full" />
+          </div>
+           <div>
+              <Skeleton className="h-5 w-1/2 mb-2" />
+              <div className="space-y-2">
+                  <Skeleton className="h-14 w-full" />
+                  <Skeleton className="h-14 w-full" />
+              </div>
+          </div>
+          <div>
+              <Skeleton className="h-5 w-1/3 mb-2" />
+              <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                   <Skeleton className="h-4 w-full" />
+              </div>
+          </div>
+      </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -246,60 +301,3 @@ export default function DoctorChartsPage() {
     </div>
   );
 }
-
-const AnalysisResult = ({ analysis }: { analysis: AnalyzeImageOutput }) => (
-  <div className="space-y-4">
-    <div>
-      <h4 className="font-semibold text-foreground mb-1">AI Summary</h4>
-      <p className="text-sm text-muted-foreground bg-secondary/50 p-2 rounded-md">{analysis.summary}</p>
-    </div>
-    <div>
-      <h4 className="font-semibold text-foreground mb-2">Potential Conditions</h4>
-      <div className="space-y-2">
-        {analysis.potentialConditions.map((item, i) => (
-          <div key={i} className="p-2 border rounded-md">
-            <div className="flex justify-between items-center">
-              <p className="font-medium text-sm">{item.condition}</p>
-              <Badge variant="secondary">{(item.confidence * 100).toFixed(0)}%</Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{item.rationale}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-     <div>
-      <h4 className="font-semibold text-foreground mb-2">Observations</h4>
-      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-        {analysis.observations.map((obs, i) => <li key={i}>{obs}</li>)}
-      </ul>
-    </div>
-    <div className="!mt-6 p-2 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 text-xs rounded-md flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-        <span>This is an AI-generated analysis and is not a substitute for professional medical advice.</span>
-    </div>
-  </div>
-);
-
-const AnalysisSkeleton = () => (
-    <div className="space-y-4 animate-pulse">
-        <div>
-            <Skeleton className="h-5 w-1/3 mb-2" />
-            <Skeleton className="h-12 w-full" />
-        </div>
-         <div>
-            <Skeleton className="h-5 w-1/2 mb-2" />
-            <div className="space-y-2">
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
-            </div>
-        </div>
-        <div>
-            <Skeleton className="h-5 w-1/3 mb-2" />
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                 <Skeleton className="h-4 w-full" />
-            </div>
-        </div>
-    </div>
-);

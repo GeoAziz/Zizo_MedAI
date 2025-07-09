@@ -29,30 +29,30 @@ interface Incident {
   status: 'Pending' | 'Active' | 'Resolved';
 }
 
-const mockResources: Resource[] = [
-  { id: "DRN-001", type: "Drone", name: "MediDrone Alpha", status: "Available", location: "Central Hub" },
-  { id: "AMB-003", type: "Ambulance", name: "Rescue Unit 3", status: "En Route", location: "North Sector", assignedTo: "INC-078" },
-  { id: "STAFF-DRL", type: "Medical Staff", name: "Dr. R. Lee (Paramedic)", status: "Available", location: "South Clinic" },
-  { id: "DRN-002", type: "Drone", name: "MediDrone Beta", status: "On Scene", location: "Downtown Plaza", assignedTo: "INC-077" },
-  { id: "AMB-001", type: "Ambulance", name: "LifeLine One", status: "Available", location: "East Depot" },
-];
-
-const mockIncidents: Incident[] = [
-  { id: "INC-078", type: "Medical Emergency", location: "123 Maple St", priority: "High", status: "Active" },
-  { id: "INC-077", type: "Outbreak Response", location: "Downtown Plaza", priority: "Medium", status: "Active" },
-  { id: "INC-079", type: "Medical Emergency", location: "456 Oak Ave", priority: "Medium", status: "Pending" },
-];
-
-const getResourceIcon = (type: Resource['type']) => {
-  if (type === "Drone") return <Orbit className="h-5 w-5 text-primary" />;
-  if (type === "Ambulance") return <Ambulance className="h-5 w-5 text-red-500" />;
-  if (type === "Medical Staff") return <UserCheck className="h-5 w-5 text-green-600" />;
-  return null;
-};
-
 export default function AdminResourceDispatchPage() {
+  const mockResources: Resource[] = [
+    { id: "DRN-001", type: "Drone", name: "MediDrone Alpha", status: "Available", location: "Central Hub" },
+    { id: "AMB-003", type: "Ambulance", name: "Rescue Unit 3", status: "En Route", location: "North Sector", assignedTo: "INC-078" },
+    { id: "STAFF-DRL", type: "Medical Staff", name: "Dr. R. Lee (Paramedic)", status: "Available", location: "South Clinic" },
+    { id: "DRN-002", type: "Drone", name: "MediDrone Beta", status: "On Scene", location: "Downtown Plaza", assignedTo: "INC-077" },
+    { id: "AMB-001", type: "Ambulance", name: "LifeLine One", status: "Available", location: "East Depot" },
+  ];
+  
+  const mockIncidents: Incident[] = [
+    { id: "INC-078", type: "Medical Emergency", location: "123 Maple St", priority: "High", status: "Active" },
+    { id: "INC-077", type: "Outbreak Response", location: "Downtown Plaza", priority: "Medium", status: "Active" },
+    { id: "INC-079", type: "Medical Emergency", location: "456 Oak Ave", priority: "Medium", status: "Pending" },
+  ];
+
   const [selectedResource, setSelectedResource] = useState<string | null>(null);
   const [selectedIncident, setSelectedIncident] = useState<string | null>(null);
+
+  const getResourceIcon = (type: Resource['type']) => {
+    if (type === "Drone") return <Orbit className="h-5 w-5 text-primary" />;
+    if (type === "Ambulance") return <Ambulance className="h-5 w-5 text-red-500" />;
+    if (type === "Medical Staff") return <UserCheck className="h-5 w-5 text-green-600" />;
+    return null;
+  };
 
   const handleDispatch = () => {
     if (selectedResource && selectedIncident) {

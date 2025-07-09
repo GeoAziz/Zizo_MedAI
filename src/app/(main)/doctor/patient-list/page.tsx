@@ -27,19 +27,18 @@ type Patient = {
   activeDiagnoses: string[];
 };
 
-
-const mockPatientsData: Patient[] = [
-  { id: "P001", name: "Johnathan P. Doe", age: 38, gender: "Male", lastVisit: "2024-07-15", condition: "Hypertension", status: "Stable", alerts: 0, nextAppointment: "2024-09-01", medications: ["Lisinopril 10mg"], activeDiagnoses: ["Hypertension"] },
-  { id: "P002", name: "Jane A. Smith", age: 45, gender: "Female", lastVisit: "2024-07-20", condition: "Diabetes Type 2", status: "Critical", alerts: 2, nextAppointment: "2024-08-05 (Urgent)", medications: ["Metformin 1000mg", "Insulin Glargine"], activeDiagnoses: ["Type 2 Diabetes", "Diabetic Neuropathy"] },
-  { id: "P003", name: "Alice B. Brown", age: 29, gender: "Female", lastVisit: "2024-07-18", condition: "Asthma", status: "Improving", alerts: 0, nextAppointment: "2024-10-15", medications: ["Albuterol Inhaler"], activeDiagnoses: ["Asthma"] },
-  { id: "P004", name: "Robert C. Johnson", age: 62, gender: "Male", lastVisit: "2024-07-19", condition: "Arthritis", status: "Stable", alerts: 0, nextAppointment: "2024-09-20", medications: ["Celecoxib 200mg"], activeDiagnoses: ["Osteoarthritis"] },
-  { id: "P005", name: "Emily K. Davis", age: 55, gender: "Female", lastVisit: "2024-06-30", condition: "Post-Op Recovery", status: "Stable", alerts: 0, nextAppointment: "2024-08-10", medications: ["Oxycodone 5mg (PRN)"], activeDiagnoses: ["Post-Cataract Surgery"] },
-  { id: "P006", name: "Michael P. Wilson", age: 70, gender: "Male", lastVisit: "2024-07-22", condition: "Heart Failure", status: "Monitor", alerts: 1, nextAppointment: "2024-08-01", medications: ["Furosemide 40mg", "Carvedilol 12.5mg"], activeDiagnoses: ["Congestive Heart Failure"] },
-];
-
 type SortKey = keyof Patient;
 
 export default function DoctorPatientListPage() {
+  const mockPatientsData: Patient[] = [
+    { id: "P001", name: "Johnathan P. Doe", age: 38, gender: "Male", lastVisit: "2024-07-15", condition: "Hypertension", status: "Stable", alerts: 0, nextAppointment: "2024-09-01", medications: ["Lisinopril 10mg"], activeDiagnoses: ["Hypertension"] },
+    { id: "P002", name: "Jane A. Smith", age: 45, gender: "Female", lastVisit: "2024-07-20", condition: "Diabetes Type 2", status: "Critical", alerts: 2, nextAppointment: "2024-08-05 (Urgent)", medications: ["Metformin 1000mg", "Insulin Glargine"], activeDiagnoses: ["Type 2 Diabetes", "Diabetic Neuropathy"] },
+    { id: "P003", name: "Alice B. Brown", age: 29, gender: "Female", lastVisit: "2024-07-18", condition: "Asthma", status: "Improving", alerts: 0, nextAppointment: "2024-10-15", medications: ["Albuterol Inhaler"], activeDiagnoses: ["Asthma"] },
+    { id: "P004", name: "Robert C. Johnson", age: 62, gender: "Male", lastVisit: "2024-07-19", condition: "Arthritis", status: "Stable", alerts: 0, nextAppointment: "2024-09-20", medications: ["Celecoxib 200mg"], activeDiagnoses: ["Osteoarthritis"] },
+    { id: "P005", name: "Emily K. Davis", age: 55, gender: "Female", lastVisit: "2024-06-30", condition: "Post-Op Recovery", status: "Stable", alerts: 0, nextAppointment: "2024-08-10", medications: ["Oxycodone 5mg (PRN)"], activeDiagnoses: ["Post-Cataract Surgery"] },
+    { id: "P006", name: "Michael P. Wilson", age: 70, gender: "Male", lastVisit: "2024-07-22", condition: "Heart Failure", status: "Monitor", alerts: 1, nextAppointment: "2024-08-01", medications: ["Furosemide 40mg", "Carvedilol 12.5mg"], activeDiagnoses: ["Congestive Heart Failure"] },
+  ];
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
@@ -83,7 +82,7 @@ export default function DoctorPatientListPage() {
     }
 
     return filterablePatients;
-  }, [searchTerm, statusFilter, sortConfig]);
+  }, [searchTerm, statusFilter, sortConfig, mockPatientsData]);
 
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -247,5 +246,3 @@ export default function DoctorPatientListPage() {
     </div>
   );
 }
-
-    

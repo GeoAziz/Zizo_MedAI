@@ -39,6 +39,7 @@ export default function PatientLabResultsPage() {
     }
   };
 
+
   useEffect(() => {
     if (!user) return;
 

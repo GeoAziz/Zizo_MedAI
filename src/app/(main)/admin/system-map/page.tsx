@@ -1,17 +1,17 @@
 
+"use client";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Map, Network, Wifi, ServerCrash, MapPin } from "lucide-react";
 import Image from "next/image";
 
-const mockNodeStats = [
-  { id: "node-01", name: "Zizo General Hospital", status: "Online", region: "City Center", load: "Normal", type: "Hospital" },
-  { id: "node-02", name: "MediAI Clinic North", status: "Online", region: "North Suburbs", load: "Low", type: "Clinic" },
-  { id: "node-03", name: "BioScan Diagnostics West", status: "Degraded", region: "West Tech Park", load: "High", type: "Diagnostics" },
-  { id: "node-04", name: "Zizo Southpoint Clinic", status: "Offline", region: "South District", load: "N/A", type: "Clinic" },
-];
-
 export default function AdminSystemMapPage() {
+  const mockNodeStats = [
+    { id: "node-01", name: "Zizo General Hospital", status: "Online", region: "City Center", load: "Normal", type: "Hospital" },
+    { id: "node-02", name: "MediAI Clinic North", status: "Online", region: "North Suburbs", load: "Low", type: "Clinic" },
+    { id: "node-03", name: "BioScan Diagnostics West", status: "Degraded", region: "West Tech Park", load: "High", type: "Diagnostics" },
+    { id: "node-04", name: "Zizo Southpoint Clinic", status: "Offline", region: "South District", load: "N/A", type: "Clinic" },
+  ];
   return (
     <div className="space-y-6">
       <PageHeader title="System Map" description="Real-time visualization of all Zizo_MediAI interconnected nodes." icon={Map} />

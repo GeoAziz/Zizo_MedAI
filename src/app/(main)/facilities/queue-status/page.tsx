@@ -1,3 +1,4 @@
+
 "use client";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,38 +15,38 @@ interface QueueStatus {
   departments?: { name: string; waitTime: number; patients: number }[];
 }
 
-const mockQueueData: QueueStatus[] = [
-  {
-    facilityName: "Zizo General Hospital",
-    currentWaitTime: 25,
-    patientsInQueue: 12,
-    trend: 'stable',
-    lastUpdated: new Date().toLocaleTimeString(),
-    departments: [
-      { name: "Emergency", waitTime: 45, patients: 5 },
-      { name: "General Practice", waitTime: 15, patients: 7 },
-    ]
-  },
-  {
-    facilityName: "MediAI Clinic North",
-    currentWaitTime: 10,
-    patientsInQueue: 3,
-    trend: 'decreasing',
-    lastUpdated: new Date().toLocaleTimeString(),
-     departments: [
-      { name: "Family Care", waitTime: 10, patients: 3 },
-    ]
-  },
-  {
-    facilityName: "BioScan Diagnostics Hub",
-    currentWaitTime: 5,
-    patientsInQueue: 2,
-    trend: 'stable',
-    lastUpdated: new Date().toLocaleTimeString(),
-  },
-];
-
 export default function QueueStatusPage() {
+  const mockQueueData: QueueStatus[] = [
+    {
+      facilityName: "Zizo General Hospital",
+      currentWaitTime: 25,
+      patientsInQueue: 12,
+      trend: 'stable',
+      lastUpdated: new Date().toLocaleTimeString(),
+      departments: [
+        { name: "Emergency", waitTime: 45, patients: 5 },
+        { name: "General Practice", waitTime: 15, patients: 7 },
+      ]
+    },
+    {
+      facilityName: "MediAI Clinic North",
+      currentWaitTime: 10,
+      patientsInQueue: 3,
+      trend: 'decreasing',
+      lastUpdated: new Date().toLocaleTimeString(),
+       departments: [
+        { name: "Family Care", waitTime: 10, patients: 3 },
+      ]
+    },
+    {
+      facilityName: "BioScan Diagnostics Hub",
+      currentWaitTime: 5,
+      patientsInQueue: 2,
+      trend: 'stable',
+      lastUpdated: new Date().toLocaleTimeString(),
+    },
+  ];
+
   const [selectedFacility, setSelectedFacility] = useState<QueueStatus | null>(mockQueueData[0]);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
 
