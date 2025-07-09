@@ -37,22 +37,22 @@ const mockPatientsData: Patient[] = [
   { id: "P006", name: "Michael P. Wilson", age: 70, gender: "Male", lastVisit: "2024-07-22", condition: "Heart Failure", status: "Monitor", alerts: 1, nextAppointment: "2024-08-01", medications: ["Furosemide 40mg", "Carvedilol 12.5mg"], activeDiagnoses: ["Congestive Heart Failure"] },
 ];
 
-const getStatusClass = (status: string) => {
-  switch (status) {
-    case "Critical": return "bg-red-500/20 text-red-700";
-    case "Monitor": return "bg-orange-500/20 text-orange-700";
-    case "Improving": return "bg-yellow-500/20 text-yellow-700";
-    case "Stable": return "bg-green-500/20 text-green-700";
-    default: return "bg-gray-500/20 text-gray-700";
-  }
-};
-
 type SortKey = keyof Patient;
 
 export default function DoctorPatientListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "Critical": return "bg-red-500/20 text-red-700";
+      case "Monitor": return "bg-orange-500/20 text-orange-700";
+      case "Improving": return "bg-yellow-500/20 text-yellow-700";
+      case "Stable": return "bg-green-500/20 text-green-700";
+      default: return "bg-gray-500/20 text-gray-700";
+    }
+  };
 
   const sortedAndFilteredPatients = useMemo(() => {
     let filterablePatients = [...mockPatientsData];
@@ -247,3 +247,5 @@ export default function DoctorPatientListPage() {
     </div>
   );
 }
+
+    
