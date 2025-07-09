@@ -53,7 +53,7 @@ export default function DoctorLiveConsultsPage() {
     if (patientIdFromQuery && mockPatientsData.find(p => p.id === patientIdFromQuery)) {
       setSelectedPatientId(patientIdFromQuery);
     }
-  }, [patientIdFromQuery, mockPatientsData]);
+  }, [patientIdFromQuery]);
 
   const patientDetails = mockPatientsData.find(p => p.id === selectedPatientId);
 

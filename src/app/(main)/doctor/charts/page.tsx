@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 
+
 export default function DoctorChartsPage() {
   interface ChartEntry {
     date: string;
@@ -25,13 +26,13 @@ export default function DoctorChartsPage() {
     image: string | null;
     dataAiHint?: string; 
   }
-  
+
   const mockPatientsForChart = [
     { id: "P001", name: "Johnathan P. Doe", dob: "1985-05-15" },
     { id: "P002", name: "Jane A. Smith", dob: "1990-02-20" },
     { id: "P003", name: "Alice B. Brown", dob: "1978-11-10" },
   ];
-  
+
   const mockChartEntries: Record<string, ChartEntry[]> = {
     "P001": [
       { date: "2024-07-25", type: "SOAP Note", content: "Patient reports stable condition. BP 130/80. Continue medication Losartan 50mg OD. Reviewed recent EKG - normal sinus rhythm.", image: null },
@@ -75,7 +76,7 @@ export default function DoctorChartsPage() {
     }
     setAnalysis(null); // Clear previous analysis
     setIsAnalyzing(false);
-  }, [selectedPatientId, patientChartEntries]);
+  }, [selectedPatientId]);
 
 
   const handleEntryClick = (entry: ChartEntry) => {
