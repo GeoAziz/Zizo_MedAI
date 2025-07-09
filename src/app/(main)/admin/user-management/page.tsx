@@ -56,19 +56,6 @@ const userSchema = z.object({
   role: z.enum(['patient', 'doctor'], { required_error: "Please select a role." }),
 });
 
-const getStatusBadgeVariant = (status?: string) => {
-  if (status === "Active") return "default";
-  if (status === "Suspended") return "destructive";
-  return "secondary";
-};
-
-const getRoleBadgeClass = (role: string) => {
-  if (role === "admin") return "bg-purple-500/20 text-purple-700";
-  if (role === "doctor") return "bg-blue-500/20 text-blue-700";
-  if (role === "patient") return "bg-green-500/20 text-green-700";
-  return "";
-};
-
 export default function AdminUserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -81,6 +68,13 @@ export default function AdminUserManagementPage() {
     resolver: zodResolver(userSchema),
     defaultValues: { name: "", email: "", password: "", role: "patient" },
   });
+  
+  const getRoleBadgeClass = (role: string) => {
+    if (role === "admin") return "bg-purple-500/20 text-purple-700";
+    if (role === "doctor") return "bg-blue-500/20 text-blue-700";
+    if (role === "patient") return "bg-green-500/20 text-green-700";
+    return "";
+  };
 
   const fetchUsers = async () => {
     setIsLoading(true);

@@ -52,17 +52,6 @@ const mockInitialSurgeries: Surgery[] = [
   { id: "S006", patientName: "Jane A. Smith", patientId: "P002", procedure: "Diabetic Foot Debridement", surgeon: "Dr. Ken Miles", or: "OR 2", date: "2024-08-10", time: "04:00 PM", duration: "45 mins", status: "Completed", aiAssist: false, notes: "Wound healing well." },
 ];
 
-const getStatusBadge = (status: Surgery['status']) => {
-  switch (status) {
-    case "Scheduled": return "bg-blue-500/20 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300";
-    case "Pending Confirmation": return "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300";
-    case "Completed": return "bg-green-500/20 text-green-700 dark:bg-green-700/30 dark:text-green-300";
-    case "Cancelled": return "bg-red-500/20 text-red-700 dark:bg-red-700/30 dark:text-red-300";
-    case "In Progress": return "bg-purple-500/20 text-purple-700 dark:bg-purple-700/30 dark:text-purple-300 animate-pulse";
-    default: return "bg-gray-500/20 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300";
-  }
-};
-
 export default function DoctorSurgerySchedulePage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date("2024-08-10T00:00:00"));
   const [surgeries, setSurgeries] = useState<Surgery[]>(mockInitialSurgeries);
@@ -70,6 +59,17 @@ export default function DoctorSurgerySchedulePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<Partial<Surgery>>({});
 
+  const getStatusBadge = (status: Surgery['status']) => {
+    switch (status) {
+      case "Scheduled": return "bg-blue-500/20 text-blue-700 dark:bg-blue-700/30 dark:text-blue-300";
+      case "Pending Confirmation": return "bg-yellow-500/20 text-yellow-700 dark:bg-yellow-700/30 dark:text-yellow-300";
+      case "Completed": return "bg-green-500/20 text-green-700 dark:bg-green-700/30 dark:text-green-300";
+      case "Cancelled": return "bg-red-500/20 text-red-700 dark:bg-red-700/30 dark:text-red-300";
+      case "In Progress": return "bg-purple-500/20 text-purple-700 dark:bg-purple-700/30 dark:text-purple-300 animate-pulse";
+      default: return "bg-gray-500/20 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300";
+    }
+  };
+  
   const filteredSurgeries = selectedDate 
     ? surgeries.filter(surgery => surgery.date === format(selectedDate, "yyyy-MM-dd")).sort((a,b) => a.time.localeCompare(b.time))
     : surgeries.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime() || a.time.localeCompare(b.time));

@@ -23,17 +23,6 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg role="img" viewBox="0 0 24 24" {...props}>
-            <path
-                fill="currentColor"
-                d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.36 1.62-3.82 1.62-2.91 0-5.22-2.34-5.22-5.23s2.31-5.23 5.22-5.23c1.62 0 2.78.62 3.64 1.45l2.4-2.33c-1.5-1.33-3.41-2.12-5.83-2.12-4.82 0-8.72 3.88-8.72 8.72s3.9 8.72 8.72 8.72c2.53 0 4.62-.84 6.13-2.35 1.59-1.59 2.1-3.9 2.1-6.15 0-.44-.04-.88-.1-1.31H12.48z"
-            />
-        </svg>
-    );
-}
-
 export default function LoginPage() {
   const { login, loginWithGoogle, isLoading: authLoading, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +33,17 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg role="img" viewBox="0 0 24 24" {...props}>
+            <path
+                fill="currentColor"
+                d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.36 1.62-3.82 1.62-2.91 0-5.22-2.34-5.22-5.23s2.31-5.23 5.22-5.23c1.62 0 2.78.62 3.64 1.45l2.4-2.33c-1.5-1.33-3.41-2.12-5.83-2.12-4.82 0-8.72 3.88-8.72 8.72s3.9 8.72 8.72 8.72c2.53 0 4.62-.84 6.13-2.35 1.59-1.59 2.1-3.9 2.1-6.15 0-.44-.04-.88-.1-1.31H12.48z"
+            />
+        </svg>
+    );
+  }
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     setIsSubmitting(true);

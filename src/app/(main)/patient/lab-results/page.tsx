@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -14,29 +15,29 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case "Normal": return "default";
-    case "Action Required": return "destructive";
-    case "Monitor": return "secondary"; // or a custom yellow-like variant
-    default: return "outline";
-  }
-};
-
-const getTrendIcon = (trend: string) => {
-  switch (trend) {
-    case "increasing": return <TrendingUp className="h-4 w-4 text-red-500" />;
-    case "decreasing": return <TrendingDown className="h-4 w-4 text-green-500" />;
-    case "stable": return <Minus className="h-4 w-4 text-gray-500" />;
-    default: return null;
-  }
-};
-
 export default function PatientLabResultsPage() {
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "Normal": return "default";
+      case "Action Required": return "destructive";
+      case "Monitor": return "secondary"; // or a custom yellow-like variant
+      default: return "outline";
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case "increasing": return <TrendingUp className="h-4 w-4 text-red-500" />;
+      case "decreasing": return <TrendingDown className="h-4 w-4 text-green-500" />;
+      case "stable": return <Minus className="h-4 w-4 text-gray-500" />;
+      default: return null;
+    }
+  };
 
   useEffect(() => {
     if (!user) return;

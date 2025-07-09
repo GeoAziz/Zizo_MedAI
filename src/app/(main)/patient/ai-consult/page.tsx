@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -42,6 +43,12 @@ export default function AiConsultPage() {
       medicalHistory: '',
     },
   });
+
+  const getConfidenceColor = (confidence: number): string => {
+    if (confidence > 0.75) return "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300";
+    if (confidence > 0.5) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300";
+    return "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300";
+  }
 
   const onSubmit: SubmitHandler<ConsultationFormValues> = async (data) => {
     setIsLoading(true);
@@ -257,10 +264,4 @@ export default function AiConsultPage() {
       </div>
     </div>
   );
-}
-
-function getConfidenceColor(confidence: number): string {
-  if (confidence > 0.75) return "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300";
-  if (confidence > 0.5) return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300";
-  return "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300";
 }

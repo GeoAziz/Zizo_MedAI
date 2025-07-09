@@ -38,18 +38,18 @@ const mockAiLogs: AiLogEntry[] = [
   { id: "LOG005", timestamp: "2024-07-28 10:10:12", flowName: "outbreakPredictionModel_run", userId: "SYS_ADMIN", status: "Running", durationMs: 120000, inputPayload: {region: "All"}},
 ];
 
-const getStatusIcon = (status: AiLogEntry['status']) => {
-  if (status === "Success") return <CheckCircle className="h-4 w-4 text-green-500" />;
-  if (status === "Failure") return <XCircle className="h-4 w-4 text-red-500" />;
-  if (status === "Warning") return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-  if (status === "Running") return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
-  return null;
-};
-
 export default function AdminAiLogsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [flowFilter, setFlowFilter] = useState('all');
   const [selectedLog, setSelectedLog] = useState<AiLogEntry | null>(null);
+
+  const getStatusIcon = (status: AiLogEntry['status']) => {
+    if (status === "Success") return <CheckCircle className="h-4 w-4 text-green-500" />;
+    if (status === "Failure") return <XCircle className="h-4 w-4 text-red-500" />;
+    if (status === "Warning") return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+    if (status === "Running") return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+    return null;
+  };
 
   const filteredLogs = mockAiLogs.filter(log =>
     (log.flowName.toLowerCase().includes(searchTerm.toLowerCase()) || (log.userId && log.userId.toLowerCase().includes(searchTerm.toLowerCase()))) &&
