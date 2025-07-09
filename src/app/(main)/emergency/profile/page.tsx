@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCircle, Droplets, AlertTriangleIcon, Phone, ShieldAlert, Edit3 } from "lucide-react";
 
-interface ProfileDetailProps {
-  label: string;
-  value: string | string[];
-  icon: React.ElementType;
-}
-
 export default function EmergencyProfilePage() {
+  interface ProfileDetailProps {
+    label: string;
+    value: string | string[];
+    icon: React.ElementType;
+  }
+  
   const emergencyProfile = {
     fullName: "Johnathan Patient Doe",
     dob: "1985-05-15",

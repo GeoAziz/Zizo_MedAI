@@ -18,25 +18,11 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getPatients, type PatientRecord } from '@/services/users';
 import { useAuth } from '@/context/auth-context';
-import { createPrescriptionAction } from '@/actions/prescribeActions';
-
-
-const prescriptionSchema = z.object({
-  patientId: z.string().min(1, "Please select a patient."),
-  drugName: z.string().min(1, "Drug name is required."),
-  dosage: z.string().min(1, "Dosage is required."),
-  frequency: z.string().min(1, "Frequency is required."),
-  duration: z.string().optional(),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1.").optional(),
-  refills: z.coerce.number().min(0, "Refills cannot be negative.").default(0),
-  notes: z.string().optional(),
-});
-
-type PrescriptionFormValues = z.infer<typeof prescriptionSchema>;
-
-const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule", "Ibuprofen 200mg Tablet", "Paracetamol 500mg Tablet"];
+import { createPrescriptionAction, type PrescriptionFormValues } from '@/actions/prescribeActions';
 
 export default function DoctorPrescribePage() {
+  const commonDrugs = ["Lisinopril 10mg Tablet", "Amoxicillin 250mg Capsule", "Metformin 500mg Tablet", "Atorvastatin 20mg Tablet", "Albuterol Inhaler 90mcg/actuation", "Sertraline 50mg Tablet", "Omeprazole 20mg Capsule", "Ibuprofen 200mg Tablet", "Paracetamol 500mg Tablet"];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [patients, setPatients] = useState<PatientRecord[]>([]);
@@ -45,6 +31,17 @@ export default function DoctorPrescribePage() {
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId');
   const { user } = useAuth();
+  
+  const prescriptionSchema = z.object({
+    patientId: z.string().min(1, "Please select a patient."),
+    drugName: z.string().min(1, "Drug name is required."),
+    dosage: z.string().min(1, "Dosage is required."),
+    frequency: z.string().min(1, "Frequency is required."),
+    duration: z.string().optional(),
+    quantity: z.coerce.number().min(1, "Quantity must be at least 1.").optional(),
+    refills: z.coerce.number().min(0, "Refills cannot be negative.").default(0),
+    notes: z.string().optional(),
+  });
 
   const form = useForm<PrescriptionFormValues>({
     resolver: zodResolver(prescriptionSchema),

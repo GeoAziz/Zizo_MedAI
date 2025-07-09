@@ -14,23 +14,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { suggestDiagnosis, type SuggestDiagnosisInput, type SuggestDiagnosisOutput } from '@/ai/flows/suggest-diagnosis';
 import { useToast } from '@/hooks/use-toast';
 
-interface Message {
-  id: string;
-  sender: 'patient' | 'doctor' | 'ai';
-  text: string;
-  timestamp: string;
-}
-
-interface Patient {
-    id: string;
-    name: string;
-    age: number;
-    condition: string;
-    symptoms: string;
-    medicalHistory: string;
-}
-
 export default function DoctorLiveConsultsPage() {
+  interface Message {
+    id: string;
+    sender: 'patient' | 'doctor' | 'ai';
+    text: string;
+    timestamp: string;
+  }
+
+  interface Patient {
+      id: string;
+      name: string;
+      age: number;
+      condition: string;
+      symptoms: string;
+      medicalHistory: string;
+  }
+
   const mockPatientsData: Patient[] = [
     { id: "P001", name: "Johnathan P. Doe", age: 38, condition: "Hypertension, Asthma", symptoms: "Persistent cough, mild fever, and fatigue for the last 3 days.", medicalHistory: "Asthma diagnosed in childhood, seasonal allergies. Allergic to penicillin." },
     { id: "P002", name: "Jane A. Smith", age: 45, condition: "Diabetes Type 2", symptoms: "Increased thirst, frequent urination, and unexplained weight loss.", medicalHistory: "Family history of diabetes. Takes Metformin 500mg daily." },

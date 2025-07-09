@@ -18,23 +18,23 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface AiLogEntry {
-  id: string;
-  timestamp: string;
-  flowName: string;
-  userId?: string; // Optional user associated with the log
-  status: 'Success' | 'Failure' | 'Running' | 'Warning';
-  durationMs: number;
-  inputPayload?: object; // Simplified for mock
-  outputPayload?: object; // Simplified for mock
-  errorMessage?: string;
-}
-
 export default function AdminAiLogsPage() {
+  interface AiLogEntry {
+    id: string;
+    timestamp: string;
+    flowName: string;
+    userId?: string; // Optional user associated with the log
+    status: 'Success' | 'Failure' | 'Running' | 'Warning';
+    durationMs: number;
+    inputPayload?: object; // Simplified for mock
+    outputPayload?: object; // Simplified for mock
+    errorMessage?: string;
+  }
+  
   const mockAiLogs: AiLogEntry[] = [
     { id: "LOG001", timestamp: "2024-07-28 10:30:15", flowName: "suggestDiagnosisFlow", userId: "P001", status: "Success", durationMs: 1250, inputPayload: {symptoms: "headache, fever"}, outputPayload: {diagnosis: "Common Cold"} },
     { id: "LOG002", timestamp: "2024-07-28 10:25:05", flowName: "summarizeMedicalHistoryFlow", userId: "D002", status: "Success", durationMs: 850, inputPayload: {history: "Long text..."}, outputPayload: {summary: "Short text..."} },
-    { id: "LOG003", timestamp: "2024-07-28 10:20:00", flowName: "imageAnalysisFlow_retinalScan", userId: "D001", status: "Failure", durationMs: 3500, inputPayload: {imageDataUri: "..."}, errorMessage: "Image resolution too low." },
+    { id: "LOG003", timestamp: "2024-07-28 10:20:00", flowName: "analyzeMedicalImage", userId: "D001", status: "Failure", durationMs: 3500, inputPayload: {imageDataUri: "..."}, errorMessage: "Image resolution too low." },
     { id: "LOG004", timestamp: "2024-07-28 10:15:45", flowName: "suggestDiagnosisFlow", userId: "P005", status: "Warning", durationMs: 1500, inputPayload: {symptoms: "fatigue"}, outputPayload: {diagnosis: "Non-specific symptoms"}, errorMessage: "Low confidence in diagnosis due to limited input." },
     { id: "LOG005", timestamp: "2024-07-28 10:10:12", flowName: "outbreakPredictionModel_run", userId: "SYS_ADMIN", status: "Running", durationMs: 120000, inputPayload: {region: "All"}},
   ];

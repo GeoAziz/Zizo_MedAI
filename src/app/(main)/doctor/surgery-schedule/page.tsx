@@ -27,23 +27,22 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
 
-
-interface Surgery {
-  id: string;
-  patientName: string;
-  patientId: string;
-  procedure: string;
-  surgeon: string;
-  or: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:MM AM/PM
-  duration: string;
-  status: 'Scheduled' | 'Pending Confirmation' | 'Completed' | 'Cancelled' | 'In Progress';
-  aiAssist: boolean;
-  notes?: string;
-}
-
 export default function DoctorSurgerySchedulePage() {
+  interface Surgery {
+    id: string;
+    patientName: string;
+    patientId: string;
+    procedure: string;
+    surgeon: string;
+    or: string;
+    date: string; // YYYY-MM-DD
+    time: string; // HH:MM AM/PM
+    duration: string;
+    status: 'Scheduled' | 'Pending Confirmation' | 'Completed' | 'Cancelled' | 'In Progress';
+    aiAssist: boolean;
+    notes?: string;
+  }
+  
   const mockInitialSurgeries: Surgery[] = [
     { id: "S001", patientName: "Robert C. Johnson", patientId: "P004", procedure: "Knee Arthroscopy (Right)", surgeon: "Dr. Anya Sharma", or: "OR 1", date: "2024-08-10", time: "09:00 AM", duration: "2 hours", status: "Scheduled", aiAssist: true, notes: "Standard procedure, no complications expected." },
     { id: "S002", patientName: "Alice B. Brown", patientId: "P003", procedure: "Appendectomy (Robotic)", surgeon: "Dr. Ken Miles", or: "OR 3 (Robotics)", date: "2024-08-10", time: "01:00 PM", duration: "1.5 hours", status: "Scheduled", aiAssist: true, notes: "Patient has mild asthma, monitor post-op breathing." },

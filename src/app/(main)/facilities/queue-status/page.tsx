@@ -6,16 +6,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Clock, Hospital, Users, Hourglass, TrendingUp, TrendingDown } from "lucide-react";
 import { useState, useEffect } from "react";
 
-interface QueueStatus {
-  facilityName: string;
-  currentWaitTime: number; // in minutes
-  patientsInQueue: number;
-  trend: 'stable' | 'increasing' | 'decreasing';
-  lastUpdated: string;
-  departments?: { name: string; waitTime: number; patients: number }[];
-}
-
 export default function QueueStatusPage() {
+  interface QueueStatus {
+    facilityName: string;
+    currentWaitTime: number; // in minutes
+    patientsInQueue: number;
+    trend: 'stable' | 'increasing' | 'decreasing';
+    lastUpdated: string;
+    departments?: { name: string; waitTime: number; patients: number }[];
+  }
+
   const mockQueueData: QueueStatus[] = [
     {
       facilityName: "Zizo General Hospital",

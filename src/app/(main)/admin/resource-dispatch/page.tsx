@@ -12,24 +12,24 @@ import { Badge } from "@/components/ui/badge";
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 
-interface Resource {
-  id: string;
-  type: 'Drone' | 'Ambulance' | 'Medical Staff';
-  name: string;
-  status: 'Available' | 'En Route' | 'On Scene' | 'Returning';
-  location: string; // Could be coordinates or area name
-  assignedTo?: string; // Incident ID or location
-}
-
-interface Incident {
-  id: string;
-  type: 'Medical Emergency' | 'Mass Casualty' | 'Outbreak Response';
-  location: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Pending' | 'Active' | 'Resolved';
-}
-
 export default function AdminResourceDispatchPage() {
+  interface Resource {
+    id: string;
+    type: 'Drone' | 'Ambulance' | 'Medical Staff';
+    name: string;
+    status: 'Available' | 'En Route' | 'On Scene' | 'Returning';
+    location: string; // Could be coordinates or area name
+    assignedTo?: string; // Incident ID or location
+  }
+
+  interface Incident {
+    id: string;
+    type: 'Medical Emergency' | 'Mass Casualty' | 'Outbreak Response';
+    location: string;
+    priority: 'High' | 'Medium' | 'Low';
+    status: 'Pending' | 'Active' | 'Resolved';
+  }
+  
   const mockResources: Resource[] = [
     { id: "DRN-001", type: "Drone", name: "MediDrone Alpha", status: "Available", location: "Central Hub" },
     { id: "AMB-003", type: "Ambulance", name: "Rescue Unit 3", status: "En Route", location: "North Sector", assignedTo: "INC-078" },

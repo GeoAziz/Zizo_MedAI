@@ -14,7 +14,6 @@ import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
-
 export default function PatientLabResultsPage() {
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +37,6 @@ export default function PatientLabResultsPage() {
       default: return null;
     }
   };
-
 
   useEffect(() => {
     if (!user) return;

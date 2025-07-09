@@ -17,21 +17,21 @@ import { Bot, Sparkles, AlertTriangle, Activity, Lightbulb, CheckCircle } from '
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Image from "next/image";
 
-const consultationSchema = z.object({
-  symptoms: z.string().min(10, { message: "Please describe your symptoms in at least 10 characters." }),
-  medicalHistory: z.string().optional(),
-});
-
-type ConsultationFormValues = z.infer<typeof consultationSchema>;
-
-// New interface for holding the AI's response
-interface AiResponse {
-  diagnoses: SuggestDiagnosisOutput;
-  audioUrl?: string;
-  isGeneratingAudio?: boolean;
-}
-
 export default function AiConsultPage() {
+  const consultationSchema = z.object({
+    symptoms: z.string().min(10, { message: "Please describe your symptoms in at least 10 characters." }),
+    medicalHistory: z.string().optional(),
+  });
+
+  type ConsultationFormValues = z.infer<typeof consultationSchema>;
+
+  // New interface for holding the AI's response
+  interface AiResponse {
+    diagnoses: SuggestDiagnosisOutput;
+    audioUrl?: string;
+    isGeneratingAudio?: boolean;
+  }
+
   const [isLoading, setIsLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<AiResponse | null>(null);
   const { toast } = useToast();

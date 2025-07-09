@@ -26,7 +26,7 @@ export default function FacilityDetailsPage() {
         { name: "Dr. Lee Min", specialty: "Pediatrics" },
         { name: "Dr. Anya Sharma", specialty: "General Surgery" },
       ],
-      imageUrl: "https://placehold.co/800x400.png?text=Zizo+General+Hospital",
+      imageUrl: "https://placehold.co/800x400.png",
       dataAiHint: "modern hospital exterior"
     },
     "F002": {
@@ -43,7 +43,7 @@ export default function FacilityDetailsPage() {
         { name: "Dr. Ken Miles", specialty: "Family Medicine" },
         { name: "Dr. Sarah Woods", specialty: "Dermatology (Visiting)" },
       ],
-      imageUrl: "https://placehold.co/800x400.png?text=MediAI+Clinic+North",
+      imageUrl: "https://placehold.co/800x400.png",
       dataAiHint: "clinic building"
     },
      "F003": {
@@ -60,7 +60,7 @@ export default function FacilityDetailsPage() {
         { name: "Dr. Lin Chen", specialty: "Radiology" },
         { name: "Dr. Omar Hassan", specialty: "Pathology" },
       ],
-      imageUrl: "https://placehold.co/800x400.png?text=BioScan+Diagnostics",
+      imageUrl: "https://placehold.co/800x400.png",
       dataAiHint: "medical lab building"
     }
   };
@@ -169,7 +169,7 @@ export default function FacilityDetailsPage() {
                         <CardTitle className="text-lg font-semibold">Live Map (Conceptual)</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center p-2">
-                        <Image src="https://placehold.co/300x200.png?text=Facility+Location" alt="Facility Map" width={300} height={200} className="rounded" data-ai-hint="map location" />
+                        <Image src="https://placehold.co/300x200.png" alt="Facility Map" width={300} height={200} className="rounded" data-ai-hint="map location" />
                     </CardContent>
                 </Card>
             </div>

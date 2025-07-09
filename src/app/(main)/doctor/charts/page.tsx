@@ -17,15 +17,15 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 
-interface ChartEntry {
-  date: string;
-  type: string;
-  content: string;
-  image: string | null;
-  dataAiHint?: string; 
-}
-
 export default function DoctorChartsPage() {
+  interface ChartEntry {
+    date: string;
+    type: string;
+    content: string;
+    image: string | null;
+    dataAiHint?: string; 
+  }
+  
   const mockPatientsForChart = [
     { id: "P001", name: "Johnathan P. Doe", dob: "1985-05-15" },
     { id: "P002", name: "Jane A. Smith", dob: "1990-02-20" },

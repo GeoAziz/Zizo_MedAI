@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow to analyze medical images and provide insights.
@@ -76,6 +77,26 @@ Based on your analysis of the image and any provided context, provide a structur
 3.  **summary**: A short, high-level summary of the most critical findings for a busy doctor.
 
 Your response must be in the specified JSON format. DO NOT provide any diagnosis as a definitive fact. Frame all findings as "potential" or "suggested" for the doctor to review.`,
+  config: {
+    safetySettings: [
+      {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+      },
+       {
+        category: 'HARM_CATEGORY_HARASSMENT',
+        threshold: 'BLOCK_NONE',
+      },
+       {
+        category: 'HARM_CATEGORY_HATE_SPEECH',
+        threshold: 'BLOCK_NONE',
+      },
+       {
+        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        threshold: 'BLOCK_NONE',
+      },
+    ]
+  }
 });
 
 const analyzeMedicalImageFlow = ai.defineFlow(

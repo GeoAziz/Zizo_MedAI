@@ -10,9 +10,9 @@ import Link from "next/link";
 
 export default function FacilitiesPage() {
   const mockFacilities = [
-    { id: "F001", name: "Zizo General Hospital", location: "City Center", capacity: "500 Beds", rating: 4.5, waitTime: "15 min", specialty: "General Medicine" },
-    { id: "F002", name: "MediAI Clinic North", location: "North Suburbs", capacity: "50 Beds", rating: 4.2, waitTime: "10 min", specialty: "Family Care" },
-    { id: "F003", name: "BioScan Diagnostics Hub", location: "Tech Park", capacity: "N/A", rating: 4.8, waitTime: "5 min", specialty: "Advanced Imaging" },
+    { id: "F001", name: "Zizo General Hospital", location: "City Center", capacity: "500 Beds", rating: 4.5, waitTime: "15 min", specialty: "General Medicine", dataAiHint: "modern hospital" },
+    { id: "F002", name: "MediAI Clinic North", location: "North Suburbs", capacity: "50 Beds", rating: 4.2, waitTime: "10 min", specialty: "Family Care", dataAiHint: "clinic building" },
+    { id: "F003", name: "BioScan Diagnostics Hub", location: "Tech Park", capacity: "N/A", rating: 4.8, waitTime: "5 min", specialty: "Advanced Imaging", dataAiHint: "modern laboratory" },
   ];
 
   return (
@@ -59,18 +59,17 @@ export default function FacilitiesPage() {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockFacilities.map((facility) => (
-            <Card key={facility.id} className="shadow-md hover:shadow-xl transition-shadow rounded-lg">
-              <CardHeader>
+            <Card key={facility.id} className="shadow-md hover:shadow-xl transition-shadow rounded-lg overflow-hidden">
+              <Image src={`https://placehold.co/400x200.png`} alt={facility.name} width={400} height={200} className="w-full h-32 object-cover" data-ai-hint={facility.dataAiHint} />
+              <div className="p-4">
                 <CardTitle className="font-headline text-lg text-foreground">{facility.name}</CardTitle>
                 <CardDescription className="text-sm text-muted-foreground">{facility.specialty}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p className="flex items-center gap-1"><MapPin className="h-4 w-4 text-primary" /> {facility.location}</p>
-                <p className="flex items-center gap-1"><Hospital className="h-4 w-4 text-primary" /> Capacity: {facility.capacity}</p>
-                <p className="flex items-center gap-1"><Clock className="h-4 w-4 text-primary" /> Avg. Wait: {facility.waitTime}</p>
-                <p>Rating: <span className="font-semibold text-accent">{facility.rating} / 5</span></p>
-              </CardContent>
-              <CardFooter>
+                <div className="mt-3 space-y-2 text-sm">
+                    <p className="flex items-center gap-1"><MapPin className="h-4 w-4 text-primary" /> {facility.location}</p>
+                    <p className="flex items-center gap-1"><Clock className="h-4 w-4 text-primary" /> Avg. Wait: {facility.waitTime}</p>
+                </div>
+              </div>
+              <CardFooter className="p-4 bg-secondary/20">
                 <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link href={`/facilities/${facility.id}`}>View Details</Link>
                 </Button>

@@ -19,18 +19,8 @@ import { CalendarIcon, Clock, Hospital, UserCheck, CheckCircle, AlertTriangle, A
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/auth-context';
-import { createBookingAction } from '@/actions/bookingActions';
+import { createBookingAction, type BookingFormValues } from '@/actions/bookingActions';
 import { useSearchParams } from 'next/navigation';
-
-const bookingSchema = z.object({
-  facilityId: z.string().min(1, "Please select a facility."),
-  service: z.string().min(1, "Please select a service."),
-  date: z.date({ required_error: "Please select a date." }),
-  time: z.string().min(1, "Please select a time slot."),
-  reason: z.string().min(10, "Please provide a brief reason for your visit (min. 10 characters).").optional(),
-});
-
-type BookingFormValues = z.infer<typeof bookingSchema>;
 
 export default function FacilityBookingPage() {
   const availableTimes = ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM", "04:00 PM"];
@@ -45,6 +35,14 @@ export default function FacilityBookingPage() {
       { id: "S003", name: "Diagnostic Test" },
       { id: "S004", name: "Vaccination" },
   ];
+
+  const bookingSchema = z.object({
+    facilityId: z.string().min(1, "Please select a facility."),
+    service: z.string().min(1, "Please select a service."),
+    date: z.date({ required_error: "Please select a date." }),
+    time: z.string().min(1, "Please select a time slot."),
+    reason: z.string().min(10, "Please provide a brief reason for your visit (min. 10 characters).").optional(),
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
@@ -146,7 +144,7 @@ export default function FacilityBookingPage() {
                     <FormLabel className="font-semibold">Service</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-input focus:ring-primary"><UserCheck className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select a service" /></SelectValue>
+                        <SelectTrigger className="bg-input focus:ring-primary"><UserCheck className="mr-2 h-4 w-4 text-muted-foreground"/> <SelectValue placeholder="Select a service" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {services.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}

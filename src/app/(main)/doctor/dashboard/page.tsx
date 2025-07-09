@@ -14,24 +14,24 @@ import type { PatientRecord } from "@/services/users";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
-interface PatientWithDetails extends PatientRecord {
-  status: string;
-  lastVisit: string;
-  alerts: number;
-}
-
-// Augment fetched patient data with mock details for the UI
-function addMockDetailsToPatients(patients: PatientRecord[]): PatientWithDetails[] {
-  const statuses = ["Stable", "Critical", "Improving", "Stable"];
-  return patients.map((patient, index) => ({
-    ...patient,
-    status: statuses[index % statuses.length],
-    lastVisit: `2024-07-${15 + (index % 5)}`,
-    alerts: patient.name.includes("Jane") ? 2 : 0, // Give Jane Smith a critical alert for demo
-  }));
-}
-
 export default function DoctorDashboardPage() {
+  interface PatientWithDetails extends PatientRecord {
+    status: string;
+    lastVisit: string;
+    alerts: number;
+  }
+  
+  // Augment fetched patient data with mock details for the UI
+  const addMockDetailsToPatients = (patients: PatientRecord[]): PatientWithDetails[] => {
+    const statuses = ["Stable", "Critical", "Improving", "Stable"];
+    return patients.map((patient, index) => ({
+      ...patient,
+      status: statuses[index % statuses.length],
+      lastVisit: `2024-07-${15 + (index % 5)}`,
+      alerts: patient.name.includes("Jane") ? 2 : 0, // Give Jane Smith a critical alert for demo
+    }));
+  }
+
   const [patientsWithDetails, setPatientsWithDetails] = useState<PatientWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();

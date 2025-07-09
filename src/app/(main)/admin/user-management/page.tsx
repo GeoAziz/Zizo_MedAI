@@ -48,15 +48,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createUserAction, type CreateUserFormValues } from '@/actions/userActions';
 
-
-const userSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-  role: z.enum(['patient', 'doctor'], { required_error: "Please select a role." }),
-});
-
 export default function AdminUserManagementPage() {
+  const userSchema = z.object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+    email: z.string().email({ message: "Invalid email address." }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    role: z.enum(['patient', 'doctor'], { required_error: "Please select a role." }),
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
