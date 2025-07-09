@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Waypoints, CheckCircle, Send, AlertTriangle, Orbit, Ambulance, UserCheck, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from 'next/image';
+import { Label } from '@/components/ui/label';
 
 interface Resource {
   id: string;
@@ -169,10 +170,3 @@ export default function AdminResourceDispatchPage() {
     </div>
   );
 }
-
-// Helper Label component if not already available globally
-const Label = ({ children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement> & {children: React.ReactNode}) => (
-  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300" {...props}>
-    {children}
-  </label>
-);

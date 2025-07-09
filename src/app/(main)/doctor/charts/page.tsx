@@ -15,6 +15,7 @@ import { analyzeMedicalImage, type AnalyzeImageInput, type AnalyzeImageOutput } 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
 
 
 interface ChartEntry {
@@ -301,12 +302,4 @@ const AnalysisSkeleton = () => (
             </div>
         </div>
     </div>
-);
-
-
-// Helper Label component (if not already global)
-const Label = ({ children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement> & {children: React.ReactNode}) => (
-  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300" {...props}>
-    {children}
-  </label>
 );
