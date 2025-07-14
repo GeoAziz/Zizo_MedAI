@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow to analyze medical images and provide insights.
@@ -8,49 +7,10 @@
  * - AnalyzeImageOutput - The return type for the analyzeMedicalImage function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { AnalyzeImageInputSchema, AnalyzeImageOutputSchema, AnalyzeImageInput, AnalyzeImageOutput } from '@/ai/flows/analyze-medical-image.types';
 
-export const AnalyzeImageInputSchema = z.object({
-  imageUrl: z
-    .string()
-    .url()
-    .describe('The public URL of the medical image to analyze.'),
-  patientContext: z
-    .string()
-    .optional()
-    .describe(
-      'Optional clinical context about the patient or what to look for.'
-    ),
-});
-export type AnalyzeImageInput = z.infer<typeof AnalyzeImageInputSchema>;
-
-export const AnalyzeImageOutputSchema = z.object({
-  observations: z
-    .array(z.string())
-    .describe('A list of key visual observations from the image.'),
-  potentialConditions: z
-    .array(
-      z.object({
-        condition: z.string().describe('The name of the potential condition.'),
-        confidence: z
-          .number()
-          .min(0)
-          .max(1)
-          .describe('The confidence level (0-1) for this condition.'),
-        rationale: z
-          .string()
-          .describe('The reasoning behind suggesting this condition.'),
-      })
-    )
-    .describe('An array of potential conditions suggested by the analysis.'),
-  summary: z
-    .string()
-    .describe(
-      'A concise, high-level summary of the findings for the doctor.'
-    ),
-});
-export type AnalyzeImageOutput = z.infer<typeof AnalyzeImageOutputSchema>;
+export type { AnalyzeImageInput, AnalyzeImageOutput };
 
 export async function analyzeMedicalImage(
   input: AnalyzeImageInput
@@ -60,8 +20,8 @@ export async function analyzeMedicalImage(
 
 const analyzeImagePrompt = ai.definePrompt({
   name: 'analyzeImagePrompt',
-  input: {schema: AnalyzeImageInputSchema},
-  output: {schema: AnalyzeImageOutputSchema},
+  input: { schema: AnalyzeImageInputSchema },
+  output: { schema: AnalyzeImageOutputSchema },
   prompt: `You are an expert AI radiology assistant. Your role is to analyze medical images for doctors, providing preliminary findings and highlighting areas of interest. You are not a replacement for a human radiologist, but an assistant to help them work more efficiently.
 
 Analyze the following medical image.
@@ -83,15 +43,15 @@ Your response must be in the specified JSON format. DO NOT provide any diagnosis
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
         threshold: 'BLOCK_NONE',
       },
-       {
+      {
         category: 'HARM_CATEGORY_HARASSMENT',
         threshold: 'BLOCK_NONE',
       },
-       {
+      {
         category: 'HARM_CATEGORY_HATE_SPEECH',
         threshold: 'BLOCK_NONE',
       },
-       {
+      {
         category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
         threshold: 'BLOCK_NONE',
       },
@@ -106,9 +66,9 @@ const analyzeMedicalImageFlow = ai.defineFlow(
     outputSchema: AnalyzeImageOutputSchema,
   },
   async (input) => {
-    const {output} = await analyzeImagePrompt(input);
+    const { output } = await analyzeImagePrompt(input);
     if (!output) {
-        throw new Error("The AI model did not return a valid analysis.");
+      throw new Error("The AI model did not return a valid analysis.");
     }
     return output;
   }

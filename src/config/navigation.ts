@@ -1,4 +1,3 @@
-
 import type { NavItem } from '@/context/auth-context';
 import {
   LayoutDashboard,
@@ -29,21 +28,21 @@ import {
 
 export const navLinks: Record<string, NavItem[]> = {
   patient: [
-    { href: '/patient/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/patient/ai-consult', label: 'AI Consultation', icon: Bot },
-    { href: '/patient/appointments', label: 'Appointments', icon: CalendarDays },
-    { href: '/patient/prescriptions', label: 'Prescriptions', icon: ClipboardList },
-    { href: '/patient/lab-results', label: 'Lab Results', icon: FlaskConical },
-    { href: '/patient/records', label: 'Medical Records', icon: FileText },
-    { href: '/patient/virtual-body-viewer', label: 'Virtual Body', icon: Scan },
+    { href: '/main/patient/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/main/patient/ai-consult', label: 'AI Consultation', icon: Bot },
+    { href: '/main/patient/appointments', label: 'Appointments', icon: CalendarDays },
+    { href: '/main/patient/prescriptions', label: 'Prescriptions', icon: ClipboardList },
+    { href: '/main/patient/lab-results', label: 'Lab Results', icon: FlaskConical },
+    { href: '/main/patient/records', label: 'Medical Records', icon: FileText },
+    { href: '/main/patient/virtual-body-viewer', label: 'Virtual Body', icon: Scan },
   ],
   doctor: [
-    { href: '/doctor/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/doctor/patient-list', label: 'Patient List', icon: Users },
-    { href: '/doctor/live-consults', label: 'Live Consults', icon: Bot },
-    { href: '/doctor/charts', label: 'Digital Charts', icon: BarChart3 },
-    { href: '/doctor/prescribe', label: 'Prescribe', icon: ClipboardList },
-    { href: '/doctor/surgery-schedule', label: 'Surgery Schedule', icon: CalendarDays },
+    { href: '/main/doctor/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/main/doctor/patient-list', label: 'Patient List', icon: Users },
+    { href: '/main/doctor/live-consults', label: 'Live Consults', icon: Bot },
+    { href: '/main/doctor/charts', label: 'Digital Charts', icon: BarChart3 },
+    { href: '/main/doctor/prescribe', label: 'Prescribe', icon: ClipboardList },
+    { href: '/main/doctor/surgery-schedule', label: 'Surgery Schedule', icon: CalendarDays },
   ],
   admin: [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -52,6 +51,10 @@ export const navLinks: Record<string, NavItem[]> = {
     { href: '/admin/outbreak-monitor', label: 'Outbreak Monitor', icon: Activity },
     { href: '/admin/user-management', label: 'User Management', icon: Users },
     { href: '/admin/ai-logs', label: 'AI Logs', icon: GitFork },
+    { href: '/admin/facilities', label: 'Facilities', icon: Hospital },
+    { href: '/admin/emergency/tracking', label: 'Emergency', icon: Siren },
+    { href: '/admin/settings', label: 'Settings', icon: Settings },
+    { href: '/admin/support', label: 'Support', icon: LifeBuoy },
   ],
   shared: [ 
     { href: '/facilities', label: 'Facilities', icon: Hospital },

@@ -1,17 +1,21 @@
-
 // src/lib/firebase-admin.ts
 import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
 
-// This is a server-side only file. 
+// This is a server-side only file.
 // It uses the service account to get admin privileges to Firestore and Auth.
 
 if (!admin.apps.length) {
   try {
-    // The service account key is stored in an environment variable for security.
-    // In your development environment (like this IDE), you might need to
-    // set this environment variable. For production, you'd set it in your hosting provider's settings.
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
-    
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY as string);
+    } else {
+      // Fallback: read from local file
+      const keyPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
+      serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+    }
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });

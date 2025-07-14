@@ -17,10 +17,11 @@ import { navLinks, getNavItemsForRole } from "@/config/navigation";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { EmergencySosButton } from '@/components/emergency-sos-button';
 import { useTheme } from "next-themes"; // Assuming next-themes is installed for theme toggling
-
+import { useRouter } from "next/navigation";
 export function AppHeader() {
   const { role, logout } = useAuth();
   const { theme, setTheme } = useTheme() || { theme: 'light', setTheme: () => {} }; // Provide fallback if useTheme is not available
+  const router = useRouter();
 
 
   const currentNavItems = role ? getNavItemsForRole(role) : [];
@@ -44,6 +45,30 @@ export function AppHeader() {
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
         </Button>
+        {/* Avatar and profile dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <UserCircle className="h-6 w-6 text-primary" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Profile</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => {
+              if (role === 'admin') {
+                router.push('/admin/settings');
+              } else if (role === 'doctor') {
+                router.push('/doctor/settings');
+              } else if (role === 'patient') {
+                router.push('/settings');
+              } else {
+                router.push('/settings');
+              }
+            }}>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">

@@ -1,4 +1,3 @@
-
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 
@@ -13,6 +12,7 @@ export interface PatientRecord {
   uid: string;
   name: string;
   email: string;
+  assignedDoctorId?: string;
 }
 
 // Function to get all users for the admin dashboard
@@ -52,7 +52,8 @@ export async function getPatients(): Promise<PatientRecord[]> {
         return {
             uid: doc.id,
             name: data.name || 'Unnamed Patient',
-            email: data.email || 'No Email'
+            email: data.email || 'No Email',
+            assignedDoctorId: data.assignedDoctorId || ''
         } as PatientRecord;
     });
 
@@ -63,4 +64,39 @@ export async function getPatients(): Promise<PatientRecord[]> {
     // For the prototype, returning an empty array is fine.
     return [];
   }
+}
+
+export async function getPatientsForDoctor(doctorUid: string): Promise<PatientRecord[]> {
+  const patients: PatientRecord[] = [];
+
+  const usersCollectionRef = collection(db, 'users');
+  const q1 = query(
+    usersCollectionRef,
+    where('role', '==', 'patient'),
+    where('assignedDoctorId', '==', doctorUid)
+  );
+  const q2 = query(
+    usersCollectionRef,
+    where('role', '==', 'patient'),
+    where('doctorId', '==', doctorUid)
+  );
+
+  const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+  snap1.forEach(doc => patients.push({
+    uid: doc.id,
+    name: doc.data().name || 'Unnamed Patient',
+    email: doc.data().email || 'No Email',
+    assignedDoctorId: doc.data().assignedDoctorId || ''
+  }));
+  snap2.forEach(doc => {
+    if (!patients.find(p => p.uid === doc.id)) {
+      patients.push({
+        uid: doc.id,
+        name: doc.data().name || 'Unnamed Patient',
+        email: doc.data().email || 'No Email',
+        assignedDoctorId: doc.data().assignedDoctorId || ''
+      });
+    }
+  });
+  return patients;
 }

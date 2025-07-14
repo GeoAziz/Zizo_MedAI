@@ -65,8 +65,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setRole(userRole);
 
           // If user has a role, redirect them away from auth pages
-          if (userRole && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-            router.push(`/${userRole}/dashboard`);
+          if (userRole && (pathname === '/auth/login' || pathname === '/register' || pathname === '/')) {
+            router.push(`/main/${userRole}/dashboard`);
           }
 
         } else {
@@ -91,8 +91,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setUser(null);
         setRole(null);
-        if (!['/login', '/register'].includes(pathname)) {
-          router.push('/login');
+        if (!['/auth/login', '/register'].includes(pathname ?? '')) {
+          router.push('/auth/login');
         }
       }
       setIsLoading(false);

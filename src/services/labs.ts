@@ -1,4 +1,6 @@
 // src/services/labs.ts
+import { db } from '@/lib/firebase';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -11,17 +13,29 @@ export interface LabResult {
     trend: "stable" | "increasing" | "decreasing";
 }
 
-const mockLabResults: LabResult[] = [
-  { id: "L001", testName: "Complete Blood Count (CBC)", date: "2024-07-20", status: "Normal", reportUrl: "#", trend: "stable" },
-  { id: "L002", testName: "Lipid Panel", date: "2024-07-20", status: "Action Required", reportUrl: "#", trend: "increasing" },
-  { id: "L003", testName: "Thyroid Stimulating Hormone (TSH)", date: "2024-06-15", status: "Normal", reportUrl: "#", trend: "stable" },
-  { id: "L004", testName: "Glucose, Plasma", date: "2024-07-20", status: "Monitor", reportUrl: "#", trend: "decreasing" },
-  { id: "L005", testName: "Urinalysis", date: "2024-05-10", status: "Normal", reportUrl: "#", trend: "stable" },
-];
-
 export async function getLabResults(userId: string): Promise<LabResult[]> {
-  console.log(`Fetching lab results for user: ${userId}`);
-  await sleep(1100); // Simulate network delay
-  // In a real app, you would fetch this from Firestore
-  return mockLabResults;
+  if (!userId) {
+    console.warn("getLabResults called without a userId.");
+    return [];
+  }
+  try {
+    const labResultsCollectionRef = collection(db, 'users', userId, 'lab_results');
+    const q = query(labResultsCollectionRef, orderBy('createdAt', 'desc'), limit(10));
+    const querySnapshot = await getDocs(q);
+    const labResults = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        testName: data.testName || 'N/A',
+        date: data.date || 'N/A',
+        status: data.status || 'Normal',
+        reportUrl: data.reportUrl || '#',
+        trend: data.trend || 'stable',
+      } as LabResult;
+    });
+    return labResults;
+  } catch (error) {
+    console.error(`Error fetching lab results for user ${userId}:`, error);
+    throw new Error("Failed to fetch lab results from the database.");
+  }
 }
